@@ -6,6 +6,7 @@ using System.Text;
 using Blackbird.Core.ConsoleIO;
 
 using corelib;
+using System.Diagnostics;
 
 namespace idx
 {
@@ -42,8 +43,11 @@ namespace idx
                 fd.BuildStaticDataFeed();
             }
 
+            long m0 = GC.GetTotalMemory(false);
             List<StaticDataFeed> data = fd.ReadStaticDataFeed();
-            Console.WriteLine("data: {0}", data.Count);
+            long m1 = GC.GetTotalMemory(false);
+            long ms1 = (m1 - m0) > 0 ? (m1 - m0) / (long)1024 : 0; 
+            Console.WriteLine("Data feed: {0} items [mem: {1} kB]", data.Count, ms1 );
 
             IndexerStorageMode mode = IndexerStorageMode.FS;
             if (ca.Options.IsOptionEnabled("mode"))
@@ -54,12 +58,16 @@ namespace idx
                     mode = IndexerStorageMode.FSRAM;
             }
 
-            Console.WriteLine("Mode: {0}", mode);
+            Console.WriteLine("Index mode: {0}", mode);
             IndexerInterop<StaticDataFeed> li = new IndexerInterop<StaticDataFeed>(
                 mode,
                 IndexerAnalyzer.StandardAnalyzer,
                 new StaticeDataFeedLI(delegate(int id) { return data.FirstOrDefault(p => p.id == id); }));
 
+            long m2 = GC.GetTotalMemory(false);
+            long ms2 = (m2 - m1) > 0 ? (m2 - m1) / (long)1024 : 0;
+            long msA = (m2 - m0) > 0 ? (m2 - m0) / (long)1024 : 0; 
+            Console.WriteLine("Index data: {0} items [mem: {1} kB - total so far: {2} kB]", li.IndexSize, ms2, msA);
             if (reset || (mode==IndexerStorageMode.RAM) || (mode!=IndexerStorageMode.RAM && forceindex))
             {
                 Console.Write("Indexing item with identifier:");
@@ -80,6 +88,7 @@ namespace idx
 
             if (ca.Arguments.Count > 0 && ca.Arguments[0] == "search")
             {
+                Console.ReadLine();
                 string what = ca.Arguments[1];
                 IEnumerable<string> where = (ca.Arguments.Count > 2) ? ca.Arguments[2].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries) : new string[]{};
 
