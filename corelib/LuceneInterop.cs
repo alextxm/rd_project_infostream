@@ -21,37 +21,6 @@ using corelib.Interchange;
 
 namespace corelib
 {
-    public enum IndexerStorageMode
-    {
-        FS,
-        FSRAM,
-        RAM
-    }
-
-    public enum IndexerAnalyzer
-    {
-        KeywordAnalyzer, 
-        PerFieldAnalyzerWrapper, 
-        SimpleAnalyzer, 
-        StandardAnalyzer, 
-        StopAnalyzer, 
-        WhitespaceAnalyzer
-    }
-
-    /// <summary>
-    /// classe che definisce le operazioni specifiche sul tipo da indicizzare
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class IndexableObjectHandler<T>
-    {
-        public abstract IEnumerable<InterchangeField> FieldsParseFromDataItem(T dataItem);
-        //public abstract T BuildDataItem(Document doc);
-        public abstract T BuildDataItem(InterchangeDocument doc);
-
-        public abstract string DataItemUniqueIdentifierField { get; }
-        public abstract object DataItemUniqueIdentifierValue(T dataItem);
-    }
-
     /// <summary>
     /// implementazione del sistema di indicizzazione e ricerca
     /// </summary>
@@ -174,9 +143,6 @@ namespace corelib
         /// <param name="dataItemHandler"></param>
         public IndexerInterop(IndexerStorageMode indexMode, IndexerAnalyzer analyzer, IndexableObjectHandler<T> dataItemHandler)
         {
-            if (analyzer == null)
-                throw new ArgumentNullException("analyzer");
-
             if (dataItemHandler == null)
                 throw new ArgumentNullException("dataItemHandler");
 
@@ -335,12 +301,12 @@ namespace corelib
                         if (searchQuery != null)
                             indexWriter.DeleteDocuments(searchQuery);
 
-                        // add new index entry
-                        Document doc = new Document();
+                        // add new index entry with lucene fields mapped to db fields
+                        Document doc = dataItemHandler.DocumentParseFromDataItem(dataItem).ToDocument();
 
                         // add lucene fields mapped to db fields
-                        foreach (InterchangeField f in dataItemHandler.FieldsParseFromDataItem(dataItem))
-                            doc.Add(f.ToField());
+                        //foreach (InterchangeDocumentFieldInfo f in dataItemHandler.FieldsParseFromDataItem(dataItem))
+                        //    doc.Add(f.ToField());
 
                         // add entry to index
                         indexWriter.AddDocument(doc);
@@ -554,7 +520,8 @@ namespace corelib
         /// <returns></returns>
         private IEnumerable<T> MapLuceneIndexToDataList(IEnumerable<Document> hits)
         {
-            return hits.Select(p => dataItemHandler.BuildDataItem(new InterchangeDocument(p))).ToList();
+            // Utils.CreateInstance<InterchangeDocument, Document>(p)
+            return hits.Select(p => dataItemHandler.BuildDataItem(p.ToInterchangeDocument())).ToList();
             //return hits.Select(dataItemHandler.BuildDataItem).ToList();
         }
 
@@ -566,7 +533,8 @@ namespace corelib
         /// <returns></returns>
         private IEnumerable<T> MapLuceneIndexToDataList(IEnumerable<ScoreDoc> hits, IndexSearcher searcher)
         {
-            return hits.Select(hit => dataItemHandler.BuildDataItem(new InterchangeDocument(searcher.Doc(hit.Doc)))).ToList();
+            //Utils.CreateInstance<InterchangeDocument, Document>(searcher.Doc(hit.Doc))
+            return hits.Select(hit => dataItemHandler.BuildDataItem(searcher.Doc(hit.Doc).ToInterchangeDocument())).ToList();
             //return hits.Select(hit => dataItemHandler.BuildDataItem(searcher.Doc(hit.Doc))).ToList();
         }
 

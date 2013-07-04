@@ -97,7 +97,7 @@ namespace idx
                 DateTime t2 = DateTime.Now;
 
                 foreach (StaticDataFeed f in found)
-                    Console.WriteLine("Result matching: {0}", f.id);
+                    Console.WriteLine("Result matching: {0} \"{1}\"", f.id, f.titolo);
 
                 Console.WriteLine("search on {0} items required {1}ms and produced {2} results", li.IndexSize, Convert.ToInt32((t2 - t1).TotalMilliseconds), found.Count);
             }

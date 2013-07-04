@@ -208,7 +208,6 @@ namespace idx
             get { return "id"; }
         }
 
-        //Lucene.Net.Documents.
         public override StaticDataFeed BuildDataItem(InterchangeDocument doc)
         {
             if (doc == null)
@@ -246,28 +245,29 @@ namespace idx
             //return feed;
         }
 
-        public override IEnumerable<InterchangeField> FieldsParseFromDataItem(StaticDataFeed dataItem)
+        public override InterchangeDocument DocumentParseFromDataItem(StaticDataFeed dataItem)
         {
-            return new InterchangeField[]
-            {
-                new InterchangeField("id",                dataItem.id.ToString(),                 FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                new InterchangeField("titolo",            dataItem.titolo,                        FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("titolo_orig",       dataItem.titolo_orig,                   FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("anno",              dataItem.anno.ToString(),               FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                new InterchangeField("attivo",            dataItem.attivo.ToString(),             FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                new InterchangeField("data_inserimento",  dataItem.data_inserimento.ToString(),   FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                new InterchangeField("artista",           dataItem.artista.ToString(),            FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("regista",           dataItem.regista.ToString(),            FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("sceneggiatore",     dataItem.sceneggiatore.ToString(),      FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("produttore",        dataItem.produttore.ToString(),         FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("generi",            dataItem.generi.ToString(),             FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("tags",              dataItem.tags.ToString(),               FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("data_rilascio",     dataItem.data_rilascio.ToString(),      FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                new InterchangeField("dettagli",          dataItem.dettagli.ToString(),           FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("libro",             dataItem.libro.ToString(),              FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("consigliato",       dataItem.consigliato.ToString(),        FieldStore.YES, FieldIndex.ANALYZED),
-                new InterchangeField("recensione",        dataItem.recensione.ToString(),         FieldStore.YES, FieldIndex.ANALYZED),
-           };
+            return new InterchangeDocument(
+                new InterchangeDocumentFieldInfo[]
+                {
+                    new InterchangeDocumentFieldInfo("id",                dataItem.id.ToString(),                 null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new InterchangeDocumentFieldInfo("titolo",            dataItem.titolo,                        null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("titolo_orig",       dataItem.titolo_orig,                   null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("anno",              dataItem.anno.ToString(),               null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new InterchangeDocumentFieldInfo("attivo",            dataItem.attivo.ToString(),             null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new InterchangeDocumentFieldInfo("data_inserimento",  dataItem.data_inserimento.ToString(),   null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new InterchangeDocumentFieldInfo("artista",           dataItem.artista.ToString(),            null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("regista",           dataItem.regista.ToString(),            null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("sceneggiatore",     dataItem.sceneggiatore.ToString(),      null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("produttore",        dataItem.produttore.ToString(),         null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("generi",            dataItem.generi.ToString(),             null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("tags",              dataItem.tags.ToString(),               null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("data_rilascio",     dataItem.data_rilascio.ToString(),      null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new InterchangeDocumentFieldInfo("dettagli",          dataItem.dettagli.ToString(),           null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("libro",             dataItem.libro.ToString(),              null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("consigliato",       dataItem.consigliato.ToString(),        null, FieldStore.YES, FieldIndex.ANALYZED),
+                    new InterchangeDocumentFieldInfo("recensione",        dataItem.recensione.ToString(),         null, FieldStore.YES, FieldIndex.ANALYZED),
+               });
         }
 
         public override object DataItemUniqueIdentifierValue(StaticDataFeed dataItem)
