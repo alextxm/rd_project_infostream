@@ -72,11 +72,15 @@ namespace corelib
                 return (fieldable.OmitNorms) ? FieldIndex.NOT_ANALYZED_NO_NORMS : FieldIndex.NOT_ANALYZED;
         }
 
-        public static InterchangeDocument ToInterchangeDocument(this Document doc)
+        public static InterchangeDocument ToInterchangeDocument(this Document doc, IEnumerable<string> selectedFields)
         {
             InterchangeDocument iDoc = new InterchangeDocument();
+            IQueryable<IFieldable> fields = doc.GetFields().AsQueryable();
 
-            doc.GetFields().ToList().ForEach(f => iDoc.Properties.Add(new InterchangeDocumentFieldInfo()
+            if(selectedFields!=null && selectedFields.Count()>0)
+                fields = fields.Where(p => selectedFields.Contains(p.Name));
+               
+            fields.ToList().ForEach(f => iDoc.Properties.Add(new InterchangeDocumentFieldInfo()
                                                                             {
                                                                                 Name = f.Name,
                                                                                 StringValue = (f.IsBinary) ? String.Empty : f.StringValue,

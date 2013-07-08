@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:tns="http://schemas.datacontract.org/2004/07/corelib.Interchange" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/corelib.Interchange" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://localhost:51043/Service1.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:complexType name="InterchangeDocumentsCollection">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Count" type="xs:int" />
+      <xs:element minOccurs="0" name="InterchangeDocuments" nillable="true" type="tns:ArrayOfInterchangeDocumentInfo" />
+      <xs:element minOccurs="0" name="Result" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Start" type="xs:int" />
+      <xs:element minOccurs="0" name="Take" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InterchangeDocumentsCollection" nillable="true" type="tns:InterchangeDocumentsCollection" />
+  <xs:complexType name="ArrayOfInterchangeDocumentInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="InterchangeDocumentInfo" nillable="true" type="tns:InterchangeDocumentInfo" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfInterchangeDocumentInfo" nillable="true" type="tns:ArrayOfInterchangeDocumentInfo" />
+  <xs:complexType name="InterchangeDocumentInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Element" nillable="true" type="tns:InterchangeDocument" />
+      <xs:element minOccurs="0" name="Score" type="xs:float" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InterchangeDocumentInfo" nillable="true" type="tns:InterchangeDocumentInfo" />
+  <xs:complexType name="InterchangeDocument">
+    <xs:sequence>
+      <xs:element name="_UniqueIdentifier" type="ser:guid" />
+      <xs:element name="properties" nillable="true" type="tns:ArrayOfInterchangeDocumentFieldInfo" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InterchangeDocument" nillable="true" type="tns:InterchangeDocument" />
+  <xs:complexType name="ArrayOfInterchangeDocumentFieldInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="InterchangeDocumentFieldInfo" nillable="true" type="tns:InterchangeDocumentFieldInfo" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfInterchangeDocumentFieldInfo" nillable="true" type="tns:ArrayOfInterchangeDocumentFieldInfo" />
+  <xs:complexType name="InterchangeDocumentFieldInfo">
+    <xs:sequence>
+      <xs:element name="_x003C_BinaryValue_x003E_k__BackingField" nillable="true" type="xs:base64Binary" />
+      <xs:element name="_x003C_Index_x003E_k__BackingField" type="tns:FieldIndex" />
+      <xs:element name="_x003C_Name_x003E_k__BackingField" nillable="true" type="xs:string" />
+      <xs:element name="_x003C_Store_x003E_k__BackingField" type="tns:FieldStore" />
+      <xs:element name="_x003C_StringValue_x003E_k__BackingField" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InterchangeDocumentFieldInfo" nillable="true" type="tns:InterchangeDocumentFieldInfo" />
+  <xs:simpleType name="FieldIndex">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="NO" />
+      <xs:enumeration value="ANALYZED" />
+      <xs:enumeration value="NOT_ANALYZED" />
+      <xs:enumeration value="NOT_ANALYZED_NO_NORMS" />
+      <xs:enumeration value="ANALYZED_NO_NORMS" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="FieldIndex" nillable="true" type="tns:FieldIndex" />
+  <xs:simpleType name="FieldStore">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="YES" />
+      <xs:enumeration value="NO" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="FieldStore" nillable="true" type="tns:FieldStore" />
+</xs:schema>

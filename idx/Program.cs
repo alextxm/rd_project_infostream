@@ -14,9 +14,10 @@ namespace idx
     {
         static void Usage()
         {
-            Console.WriteLine("Usage: idx [options] [search string fields]");
+            Console.WriteLine("Usage: idx [options] [search string [fields]]");
             Console.WriteLine();
             Console.WriteLine(" -reset               reset the datafeed [WARNING! BE SURE TO BE ONLINE!]");
+            Console.WriteLine(" -withscore           use results scoring");
             Console.WriteLine(" -index               repeat indexing of the datafeed");
             Console.WriteLine(" -mode=value          index mode: fs,fsram,ram");
             Console.WriteLine(" -simfsramrefresh     simulate a refresh for fsram-based index");
@@ -37,6 +38,7 @@ namespace idx
             bool reset = ca.Options.IsOptionEnabled("reset");
             bool index = ca.Options.IsOptionEnabled("index");
             bool forceindex = index && ca.Options["index"]=="force";
+            bool usescoring = ca.Options.IsOptionEnabled("withscore");
 
             if(reset)
             {    
@@ -88,16 +90,20 @@ namespace idx
 
             if (ca.Arguments.Count > 0 && ca.Arguments[0] == "search")
             {
+                if (usescoring)
+                    li.UseScoring = true;
+
                 Console.ReadLine();
                 string what = ca.Arguments[1];
                 IEnumerable<string> where = (ca.Arguments.Count > 2) ? ca.Arguments[2].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries) : new string[]{};
 
                 DateTime t1 = DateTime.Now;
-                List<StaticDataFeed> found = li.Search(what, where).ToList(); // li.GetAllIndexRecords().ToList();
+                li.Search(what, where).ScoreDocs.ToList();
+                List<IndexerSearchResultData<StaticDataFeed>> found = li.Search(what, where).ScoreDocs.ToList(); // li.GetAllIndexRecords().ToList();
                 DateTime t2 = DateTime.Now;
 
-                foreach (StaticDataFeed f in found)
-                    Console.WriteLine("Result matching: {0} \"{1}\"", f.id, f.titolo);
+                foreach (IndexerSearchResultData<StaticDataFeed> f in found)
+                    Console.WriteLine("Result matching{2}: {0} \"{1}\"", f.Element.id, f.Element.titolo, (li.UseScoring) ? String.Format(" at {0:n2}%", f.Score) : String.Empty);
 
                 Console.WriteLine("search on {0} items required {1}ms and produced {2} results", li.IndexSize, Convert.ToInt32((t2 - t1).TotalMilliseconds), found.Count);
             }

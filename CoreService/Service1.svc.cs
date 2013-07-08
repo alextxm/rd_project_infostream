@@ -13,20 +13,30 @@ namespace CoreService
 {
     // NOTA: è possibile utilizzare il comando "Rinomina" del menu "Refactoring" per modificare il nome di classe "Service1" nel codice, nel file svc e nel file di configurazione contemporaneamente.
     // NOTA: per avviare il client di prova WCF per testare il servizio, selezionare Service1.svc o Service1.svc.cs in Esplora soluzioni e avviare il debug.
+    //[ServiceBehavior(InstanceContextMode.Single)]
     public class Service1 : IService1
     {
         private IndexerInterop<InterchangeDocument> li = null;
         public Service1()
         {
-            //IndexerInterop<InterchangeDocument> li = new IndexerInterop<InterchangeDocument>(
-            //        IndexerStorageMode.FSRAM,
-            //        IndexerAnalyzer.StandardAnalyzer,
-            //        new StaticeDataFeedLI(delegate(int id) { return data.FirstOrDefault(p => p.id == id); }));
+            li = CacheManager.GetDataCache();
         }
 
-        public string GetData(int value)
+        public InterchangeDocumentsCollection SearchData(string query, int skip, int take, bool useScoring, IEnumerable<string> filteredFields)
         {
-            return string.Format("You entered: {0}", value);
+            InterchangeDocumentsCollection coll = new InterchangeDocumentsCollection() { Result=false, Start=0, Take=0, InterchangeDocuments=null, Count=0 };
+
+            if (take <= 0)
+                take = 10;
+
+            if (skip <= 0)
+                skip = 0;
+
+            if(String.IsNullOrEmpty(query))
+                return coll;
+
+            coll.InterchangeDocuments = li.Search(query, String.Empty, skip, take, filteredFields).ScoreDocs.Select(p => new InterchangeDocumentInfo() { Score = p.Score, Element = p.Element });
+            return coll;
         }
     }
 }

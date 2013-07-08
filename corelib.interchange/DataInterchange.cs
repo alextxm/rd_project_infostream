@@ -30,6 +30,21 @@ namespace corelib.Interchange
         ANALYZED_NO_NORMS
     }
 
+    public class InterchangeDocumentsCollection
+    {
+        public int Count { get; set; }
+        public int Start { get; set; }
+        public int Take { get; set; }
+        public bool Result { get; set; }
+        public IEnumerable<InterchangeDocumentInfo> InterchangeDocuments { get; set; }
+    }
+
+    public class InterchangeDocumentInfo
+    {
+        public float Score { get; set; }
+        public InterchangeDocument Element { get; set; }
+    }
+
     /// <summary>
     /// classe di informazioni su di un documento indicizzato dall'indexer
     /// viene utilizzato nello scambio dati tra InderInterop e IndexableObjectHandler per permettere l'isolamento di Lucene
