@@ -30,7 +30,7 @@ namespace CoreService
                 };
 
                data = new IndexerInterop<InterchangeDocument>(
-                        @"c:\projects\skunkworks\idx\idx\bin\Debug\index.lif",
+                        System.Configuration.ConfigurationManager.AppSettings["indexFolder"],
                         IndexerStorageMode.FSRAM,
                         IndexerAnalyzer.StandardAnalyzer,
                         new InterchangeDocumentIOH());

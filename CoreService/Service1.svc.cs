@@ -35,8 +35,21 @@ namespace CoreService
             if(String.IsNullOrEmpty(query))
                 return coll;
 
-            coll.InterchangeDocuments = li.Search(query, String.Empty, skip, take, filteredFields).ScoreDocs.Select(p => new InterchangeDocumentInfo() { Score = p.Score, Element = p.Element });
+            IndexerSearchResults<InterchangeDocument> results = li.Search(query, String.Empty, skip, take, filteredFields);
+            coll.InterchangeDocuments = results.ScoreDocs.Select(p => new InterchangeDocumentInfo() { Score = p.Score, Element = p.Element });
+            coll.Count = results.Count;
+
             return coll;
+        }
+
+        public bool AddUpdateData(IEnumerable<InterchangeDocument> documents)
+        {
+           return li.AddUpdateLuceneIndex(documents, true);
+        }
+
+        public bool RemoveData(IEnumerable<InterchangeDocument> documents)
+        {
+            return li.DeleteFromIndex(documents.ElementAt(0));
         }
     }
 }

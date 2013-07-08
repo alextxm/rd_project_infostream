@@ -247,7 +247,7 @@ namespace idx
 
         public override InterchangeDocument DocumentParseFromDataItem(StaticDataFeed dataItem)
         {
-            return new InterchangeDocument(
+            return new InterchangeDocument("id",
                 new InterchangeDocumentFieldInfo[]
                 {
                     new InterchangeDocumentFieldInfo("id",                dataItem.id.ToString(),                 null, FieldStore.YES, FieldIndex.NOT_ANALYZED),

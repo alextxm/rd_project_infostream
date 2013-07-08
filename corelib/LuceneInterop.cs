@@ -79,7 +79,7 @@ namespace corelib
                         if (indexSearcher != null)
                             this.OnIndexSearcherUpdateRequested(this, new EventArgs());
                     }
-                    catch(Exception ex)
+                    catch(Exception)
                     {
                         return null;
                     }
@@ -130,7 +130,7 @@ namespace corelib
                         count = reader.NumDocs();
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
 
@@ -357,7 +357,7 @@ namespace corelib
                 // update the searcher
                 this.OnIndexSearcherUpdateRequested(this, new EventArgs());
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -466,7 +466,7 @@ namespace corelib
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -491,7 +491,7 @@ namespace corelib
                 this.OnIndexSearcherUpdateRequested(this, new EventArgs());
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -596,7 +596,7 @@ namespace corelib
         protected IEnumerable<T> MapLuceneIndexToDataList(IEnumerable<Document> hits, IEnumerable<string> selectedFields = null)
         {
             // Utils.CreateInstance<InterchangeDocument, Document>(p)
-            return hits.Select(p => dataItemHandler.BuildDataItem(p.ToInterchangeDocument(selectedFields))).ToList();
+            return hits.Select(p => dataItemHandler.BuildDataItem(p.ToInterchangeDocument(dataItemHandler, selectedFields))).ToList();
             //return hits.Select(dataItemHandler.BuildDataItem).ToList();
         }
 
@@ -610,7 +610,7 @@ namespace corelib
         protected IEnumerable<IndexerSearchResultData<T>> MapLuceneIndexToDataList(IEnumerable<ScoreDoc> hits, IndexSearcher searcher, IEnumerable<string> selectedFields = null)
         {
             //Utils.CreateInstance<InterchangeDocument, Document>(searcher.Doc(hit.Doc))
-            return hits.Select(hit => new IndexerSearchResultData<T>() { Score = hit.Score, Element = dataItemHandler.BuildDataItem(searcher.Doc(hit.Doc).ToInterchangeDocument(selectedFields)) }).ToList();
+            return hits.Select(hit => new IndexerSearchResultData<T>() { Score = hit.Score, Element = dataItemHandler.BuildDataItem(searcher.Doc(hit.Doc).ToInterchangeDocument(dataItemHandler, selectedFields)) }).ToList();
             //return hits.Select(hit => dataItemHandler.BuildDataItem(searcher.Doc(hit.Doc))).ToList();
         }
 

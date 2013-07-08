@@ -74,11 +74,11 @@ namespace corelib.Interchange
     [Serializable]
     public class InterchangeDocument
     {
-        private Guid _UniqueIdentifier = Guid.Empty;
-        public Guid UniqueIdentifier
+        private string uniqueIdentifierField = null;
+        public string UniqueIdentifierField
         {
-            get { return _UniqueIdentifier; }
-            set { _UniqueIdentifier = value; }
+            get { return uniqueIdentifierField; }
+            set { uniqueIdentifierField = value; }
         }
 
         private List<InterchangeDocumentFieldInfo> properties = new List<InterchangeDocumentFieldInfo>();
@@ -88,17 +88,20 @@ namespace corelib.Interchange
             set { properties = value; }
         }
 
-        public InterchangeDocument()
+        public InterchangeDocument(string uniqueIdentifierField)
         {
-            _UniqueIdentifier = Guid.NewGuid();
+            if (String.IsNullOrEmpty(uniqueIdentifierField))
+                throw new ArgumentNullException("uniqueIdentifierField");
         }
 
-        public InterchangeDocument(IEnumerable<InterchangeDocumentFieldInfo> fields)
+        public InterchangeDocument(string uniqueIdentifierField, IEnumerable<InterchangeDocumentFieldInfo> fields)
         {
             if (fields == null)
                 throw new ArgumentNullException("fields");
 
-            _UniqueIdentifier = Guid.NewGuid();
+            if(String.IsNullOrEmpty(uniqueIdentifierField) || !fields.Any(p=> p.Name == uniqueIdentifierField))
+                throw new ArgumentNullException("uniqueIdentifierField");
+
             properties.AddRange(fields);
         }
 
@@ -134,7 +137,7 @@ namespace corelib.Interchange
         {
         }
 
-        public InterchangeDocumentFieldInfo(string name, string value, byte[]binaryValue, FieldStore store, FieldIndex index)
+        public InterchangeDocumentFieldInfo(string name, string value, byte[] binaryValue, FieldStore store, FieldIndex index)
         {
             this.Name = name;
             this.StringValue = (binaryValue == null) ? value : null;
@@ -184,7 +187,7 @@ namespace corelib.Interchange
 
         public override object DataItemUniqueIdentifierValue(InterchangeDocument dataItem)
         {
-            return dataItem.UniqueIdentifier;
+            return dataItem.Get(dataItem.UniqueIdentifierField);
         }
     }
 }
