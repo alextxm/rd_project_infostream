@@ -27,20 +27,21 @@ namespace corelib
     /// <typeparam name="T"></typeparam>
     public class IndexerInterop<T> : IDisposable where T : class
     {
-        internal delegate void IndexSearcherUpdateHandler(object sender, EventArgs e);
+        protected delegate void IndexSearcherUpdateHandler(object sender, EventArgs e);
 
-        private IndexerStorageMode indexMode = IndexerStorageMode.FS;
-        private Analyzer analyzer = null;
-        private IndexableObjectHandler<T> dataItemHandler = null;
-        private IndexSearcher indexSearcher = null;
+        protected Type tType = typeof(T);
+        protected IndexerStorageMode indexMode = IndexerStorageMode.FS;
+        protected Analyzer analyzer = null;
+        protected IndexableObjectHandler<T> dataItemHandler = null;
+        protected IndexSearcher indexSearcher = null;
 
         // properties
-        private string luceneIndexFullPath = Path.Combine("index.lif"); // lucene index file
+        protected string luceneIndexFullPath = Path.Combine("index.lif"); // lucene index file
 
-        private DirectoryInfo _directoryInfo = null;
-        private Lucene.Net.Store.Directory _directoryTemp = null;
+        protected DirectoryInfo _directoryInfo = null;
+        protected Lucene.Net.Store.Directory _directoryTemp = null;
 
-        private Lucene.Net.Store.Directory luceneIndexDirectory
+        protected Lucene.Net.Store.Directory luceneIndexDirectory
         {
             get
             {
@@ -109,7 +110,7 @@ namespace corelib
             }
         }
 
-        private event IndexSearcherUpdateHandler OnIndexSearcherUpdateRequested = null;
+        protected event IndexSearcherUpdateHandler OnIndexSearcherUpdateRequested = null;
 
         /// <summary>
         /// get the number of items already in the index
@@ -302,7 +303,7 @@ namespace corelib
                             indexWriter.DeleteDocuments(searchQuery);
 
                         // add new index entry with lucene fields mapped to db fields
-                        Document doc = dataItemHandler.DocumentParseFromDataItem(dataItem).ToDocument();
+                        Document doc = (tType==typeof(InterchangeDocument)) ? (dataItem as InterchangeDocument).ToDocument() : dataItemHandler.DocumentParseFromDataItem(dataItem).ToDocument();
 
                         // add lucene fields mapped to db fields
                         //foreach (InterchangeDocumentFieldInfo f in dataItemHandler.FieldsParseFromDataItem(dataItem))
@@ -464,7 +465,7 @@ namespace corelib
         /// <param name="searchFields"></param>
         /// <param name="hitsLimit"></param>
         /// <returns></returns>
-        private IEnumerable<T> DoSearch(string searchQuery, IEnumerable<string> searchFields, int hitsLimit = 1000)
+        protected IEnumerable<T> DoSearch(string searchQuery, IEnumerable<string> searchFields, int hitsLimit = 1000)
         {
             // validation
             if (String.IsNullOrEmpty(searchQuery.Replace("*", "").Replace("?", "")))
@@ -495,7 +496,7 @@ namespace corelib
         /// <param name="searchQuery"></param>
         /// <param name="parser"></param>
         /// <returns></returns>
-        private Query ParseQuery(string searchQuery, QueryParser parser)
+        protected Query ParseQuery(string searchQuery, QueryParser parser)
         {
             Query query;
 
@@ -518,7 +519,7 @@ namespace corelib
         /// </summary>
         /// <param name="hits"></param>
         /// <returns></returns>
-        private IEnumerable<T> MapLuceneIndexToDataList(IEnumerable<Document> hits)
+        protected IEnumerable<T> MapLuceneIndexToDataList(IEnumerable<Document> hits)
         {
             // Utils.CreateInstance<InterchangeDocument, Document>(p)
             return hits.Select(p => dataItemHandler.BuildDataItem(p.ToInterchangeDocument())).ToList();
@@ -531,7 +532,7 @@ namespace corelib
         /// <param name="hits"></param>
         /// <param name="searcher"></param>
         /// <returns></returns>
-        private IEnumerable<T> MapLuceneIndexToDataList(IEnumerable<ScoreDoc> hits, IndexSearcher searcher)
+        protected IEnumerable<T> MapLuceneIndexToDataList(IEnumerable<ScoreDoc> hits, IndexSearcher searcher)
         {
             //Utils.CreateInstance<InterchangeDocument, Document>(searcher.Doc(hit.Doc))
             return hits.Select(hit => dataItemHandler.BuildDataItem(searcher.Doc(hit.Doc).ToInterchangeDocument())).ToList();
@@ -543,7 +544,7 @@ namespace corelib
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void IndexSearcherUpdater(object sender, EventArgs e)
+        protected void IndexSearcherUpdater(object sender, EventArgs e)
         {
             lock(indexSearcher)
             {
