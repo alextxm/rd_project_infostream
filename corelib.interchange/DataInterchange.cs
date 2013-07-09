@@ -4,9 +4,6 @@
 // ===CONFIDENTIAL===
 //
 
-// use V1 or V2
-#define V1
-
 using System;
 using System.Linq;
 using System.Collections;
@@ -49,28 +46,6 @@ namespace corelib.Interchange
     /// classe di informazioni su di un documento indicizzato dall'indexer
     /// viene utilizzato nello scambio dati tra InderInterop e IndexableObjectHandler per permettere l'isolamento di Lucene
     /// </summary>
-#if V2
-    public class InterchangeDocument
-    {
-        //private List<InterchangeDocumentFieldInfo> properties = new List<InterchangeDocumentFieldInfo>();
-        private Document doc = null;
-
-        internal InterchangeDocument(Lucene.Net.Documents.Document doc)
-        {
-            this.doc = doc;
-        }
-
-        public string Get(string key)
-        {
-            return doc.Get(key);
-        }
-
-        public byte[] GetBinary(string key)
-        {
-            return doc.GetBinaryValue(key);
-        }
-    }
-#elif V1
     [Serializable]
     public class InterchangeDocument
     {
@@ -117,7 +92,6 @@ namespace corelib.Interchange
             return (f == null) ? null : f.BinaryValue;
         }
     }
-#endif
 
     [Serializable]
     public class InterchangeDocumentFieldInfo : IFieldInfo, IFieldInfoIndexerSpecific

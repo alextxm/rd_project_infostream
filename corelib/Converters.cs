@@ -4,9 +4,6 @@
 // ===CONFIDENTIAL===
 //
 
-// use V1 or V2
-#define V1
-
 using System;
 using System.Linq;
 using System.Collections;

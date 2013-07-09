@@ -525,7 +525,6 @@ namespace corelib
             else
                 parser = new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, searchFields.ToArray(), analyzer);
 
-
             Query query = ParseQuery(searchQuery, parser);
 
             if (query == null)
