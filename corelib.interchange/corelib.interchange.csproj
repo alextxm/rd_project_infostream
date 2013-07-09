@@ -40,6 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataInterchange.cs" />
+    <Compile Include="IXDB.cs" />
+    <Compile Include="IXDQ.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Structures.cs" />
   </ItemGroup>
