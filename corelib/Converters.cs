@@ -15,9 +15,32 @@ using Blackbird.Core.Runtime;
 using Lucene.Net.Documents;
 
 using corelib.Interchange;
+using corelib.interchange.M2;
 
 namespace corelib
 {
+    internal static class ExtensionsM2
+    {
+        public static IXDQ ToIXDQ(this Document doc, string IEnumerable<string> selectedFields)
+        {
+            IQueryable<IFieldable> fields = doc.GetFields().Where(p => p.Name!="").AsQueryable();
+            IXDQ iDoc = new IXDQ(doc.
+            
+
+            if (selectedFields != null && selectedFields.Count() > 0)
+                fields = fields.Where(p => selectedFields.Contains(p.Name));
+
+            fields.ToList().ForEach(f => iDoc.Results.Add(new IXDQResult()
+                                                                {
+                                                                    Name = f.Name,
+                                                                    Value = (!f.IsBinary) ? f.StringValue : Convert.ToBase64String(f.GetBinaryValue()),
+                                                                    IsEncoded = f.IsBinary
+                                                                }));
+
+            return iDoc;
+        }
+    }
+
     /// <summary>
     /// convertitori tra InterchangeXXXXXX e gli equivalenti Lucene
     /// </summary>

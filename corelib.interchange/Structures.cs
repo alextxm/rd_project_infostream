@@ -24,6 +24,7 @@ namespace corelib
         WhitespaceAnalyzer
     }
 
+#if DEPRECATED
     /// <summary>
     /// classe che definisce le operazioni specifiche sul tipo da indicizzare
     /// </summary>
@@ -36,4 +37,5 @@ namespace corelib
         public abstract string DataItemUniqueIdentifierField { get; }
         public abstract object DataItemUniqueIdentifierValue(T dataItem);
     }
+#endif
 }

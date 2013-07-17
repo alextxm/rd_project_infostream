@@ -27,6 +27,7 @@ namespace corelib.Interchange
         ANALYZED_NO_NORMS
     }
 
+#if DEPRECATED
     public class InterchangeDocumentsCollection
     {
         public int Count { get; set; }
@@ -164,4 +165,5 @@ namespace corelib.Interchange
             return dataItem.Get(dataItem.UniqueIdentifierField);
         }
     }
+#endif
 }

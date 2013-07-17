@@ -17,22 +17,19 @@ using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 
-using corelib.Interchange;
+using corelib.interchange.M2;
 
 namespace corelib
 {
     /// <summary>
     /// implementazione del sistema di indicizzazione e ricerca
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class IndexerInterop<T> : IDisposable where T : class
+    public class IndexerInterop : IDisposable
     {
         protected delegate void IndexSearcherUpdateHandler(object sender, EventArgs e);
 
-        protected Type tType = typeof(T);
         protected IndexerStorageMode indexMode = IndexerStorageMode.FS;
         protected Analyzer analyzer = null;
-        protected IndexableObjectHandler<T> dataItemHandler = null;
         protected IndexSearcher indexSearcher = null;
 
         protected string luceneIndexFullPath = Path.Combine("index.lif"); // lucene index file
@@ -108,7 +105,7 @@ namespace corelib
         }
 
         protected event IndexSearcherUpdateHandler OnIndexSearcherUpdateRequested = null;
-        protected IndexerSearchResults<T> EmptySearchResult = new IndexerSearchResults<T>() { Count = 0, Skip = 0, Take = 0, ScoreDocs = new IndexerSearchResultData<T>[]{} };
+        protected IXDQCollection EmptySearchResult = new IXDQCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXDQ[]{}, ResultStatus = IXDQResultStatus.Fail };
 
         #region public properties
         public bool UseScoring { get; set; }
@@ -147,8 +144,8 @@ namespace corelib
         /// <param name="analyzer"></param>
         /// <param name="dataItemHandler"></param>
         /// <param name="perFieldAnalyzers"></param>
-        public IndexerInterop(IndexerStorageMode indexMode, IndexerAnalyzer analyzer, IndexableObjectHandler<T> dataItemHandler, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
-            : this(null, indexMode, analyzer, dataItemHandler, perFieldAnalyzers)
+        public IndexerInterop(IndexerStorageMode indexMode, IndexerAnalyzer analyzer, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
+            : this(null, indexMode, analyzer, perFieldAnalyzers)
         {
         }
 
@@ -160,13 +157,9 @@ namespace corelib
         /// <param name="analyzer"></param>
         /// <param name="dataItemHandler"></param>
         /// <param name="perFieldAnalyzers"></param>
-        public IndexerInterop(string indexFullPath, IndexerStorageMode indexMode, IndexerAnalyzer analyzer, IndexableObjectHandler<T> dataItemHandler, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
+        public IndexerInterop(string indexFullPath, IndexerStorageMode indexMode, IndexerAnalyzer analyzer, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
         {
-            if (dataItemHandler == null)
-                throw new ArgumentNullException("dataItemHandler");
-
             this.indexMode = indexMode;
-            this.dataItemHandler = dataItemHandler;
 
             if(analyzer != IndexerAnalyzer.PerFieldAnalyzerWrapper)
                 this.analyzer = GetAnalyzer(analyzer, false);
@@ -222,13 +215,9 @@ namespace corelib
         /// <summary>
         /// search for a specific record
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="fieldName"></param>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
-        /// <param name="selectedFields"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        public IndexerSearchResults<T> Search(string input, string fieldName = null, int skip = 0, int take = 0, IEnumerable<string> selectedFields = null)
+        public IXDQCollection Search(IXDR request)
         {
             if (String.IsNullOrEmpty(input))
                 return EmptySearchResult;
@@ -502,33 +491,27 @@ namespace corelib
         /// <summary>
         /// core search method
         /// </summary>
-        /// <param name="searchQuery"></param>
-        /// <param name="searchFields"></param>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        protected IndexerSearchResults<T> DoSearch(string searchQuery, IEnumerable<string> searchFields, int skip, int take)
+        protected IXDQCollection DoSearch(IXDR request)
         {
             // validation
-            if (String.IsNullOrEmpty(searchQuery.Replace("*", "").Replace("?", "")))
-                return EmptySearchResult;
-
-            //if (searchFields == null)
-            //    return EmptySearchResult;
+            if (String.IsNullOrEmpty(request.Query.Replace("*", "").Replace("?", "")))
+                return new IXDQCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXDQ[] { }, ResultStatus = IXDQResultStatus.ErrorQuerySyntax };
 
             QueryParser parser = null;
 
-            if (searchFields.Count() < 1)
+            if (request.Fields.Count() < 1)
                 parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_30, null, analyzer);
-            else if (searchFields.Count() == 1)
-                parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_30, searchFields.ElementAt(0), analyzer);
+            else if (request.Fields.Count() == 1)
+                parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_30, request.Fields.ElementAt(0), analyzer);
             else
-                parser = new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, searchFields.ToArray(), analyzer);
+                parser = new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, request.Fields.ToArray(), analyzer);
 
-            Query query = ParseQuery(searchQuery, parser);
+            Query query = ParseQuery(request.Query, parser);
 
             if (query == null)
-                return EmptySearchResult;
+                return new IXDQCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXDQ[] { }, ResultStatus = IXDQResultStatus.ErrorQuerySyntax };;
 
             if(UseScoring)
                 indexSearcher.SetDefaultFieldSortScoring(true, true);
@@ -537,16 +520,23 @@ namespace corelib
 
             TopFieldDocs hits = indexSearcher.Search(query, null, this.MaxSearchHits, Sort.RELEVANCE);
 
+            int skip = request.Skip;
+            int take = request.Take;
+
             if (skip < 0)
                 skip = 0;
 
             if (take < 1)
                 take = this.MaxSearchHits;
 
-            IndexerSearchResults<T> results = new IndexerSearchResults<T>() { ScoreDocs = MapLuceneIndexToDataList(hits.ScoreDocs.Skip(skip).Take(take), indexSearcher), Skip = skip, Take = take, Count = hits.TotalHits };
-            //results = MapLuceneIndexToDataList(hits, indexSearcher);
-
-            return results;
+            return new IXDQCollection
+                            { 
+                                Elements = MapLuceneIndexToDataList(hits.ScoreDocs.Skip(skip).Take(take), indexSearcher), 
+                                Start = skip, 
+                                Take = take, 
+                                Count = hits.TotalHits, 
+                                ResultStatus = (hits.TotalHits>0) ? IXDQResultStatus.Success : IXDQResultStatus.NoData
+                            };
         }
 
         /// <summary>
@@ -592,11 +582,9 @@ namespace corelib
         /// </summary>
         /// <param name="hits"></param>
         /// <returns></returns>
-        protected IEnumerable<T> MapLuceneIndexToDataList(IEnumerable<Document> hits, IEnumerable<string> selectedFields = null)
+        protected IEnumerable<IXDQ> MapLuceneIndexToDataList(IEnumerable<Document> hits, IEnumerable<string> selectedFields = null)
         {
-            // Utils.CreateInstance<InterchangeDocument, Document>(p)
-            return hits.Select(p => dataItemHandler.BuildDataItem(p.ToInterchangeDocument(dataItemHandler, selectedFields))).ToList();
-            //return hits.Select(dataItemHandler.BuildDataItem).ToList();
+            return hits.Select(p => p.ToIXDQ(selectedFields)).ToList();
         }
 
         /// <summary>
@@ -733,6 +721,7 @@ namespace corelib
         #endregion
     }
 
+#if DEPRECATED
     public class IndexerSearchResultData<T>
     {
         public float Score { get; set; }
@@ -746,4 +735,5 @@ namespace corelib
         public int Take { get; set; }
         public IEnumerable<IndexerSearchResultData<T>> ScoreDocs { get; set; }
     }
+#endif
 }

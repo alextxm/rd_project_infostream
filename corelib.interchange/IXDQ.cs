@@ -2,37 +2,51 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime.Serialization;
+using System.ServiceModel;
 
 namespace corelib.interchange.M2
 {
-    public enum IXDQResult : int
+    public enum IXDQResultStatus : int
     {
+        [EnumMember]
         Success = 0,
-        Fail = 1,
+        [EnumMember]
+        NoData = 1,
+        [EnumMember]
+        Fail = 9,
+        [EnumMember]
         ErrorQuerySyntax = 10,
-        ErrorInternal = 11,
-        ErrorNoData = 12
+        [EnumMember]
+        ErrorInternal = 11
     }
 
-    [Flags]
-    public enum IXDQOperationFlags : int
-    {
-        NoExtensions = 0x00,
-        WithScore = 0x01
-    }
-
+    [ServiceKnownType(typeof(IXDQResultStatus))]
+    [ServiceKnownType(typeof(IXDQ))] 
     public sealed class IXDQCollection
     {
         public int Count { get; set; }
         public int Start { get; set; }
         public int Take { get; set; }
-        public IXDQResult Result { get; set; }
-        public IXDQOperationFlags Flags { get; set; }
+        public IXDQResultStatus ResultStatus { get; set; }
         public IEnumerable<IXDQ> Elements { get; set; }
+    }
+
+    public sealed class IXDQResult
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public bool IsEncoded { get; set; }
     }
 
     public sealed class IXDQ
     {
+        public sealed class Value
+        {
+            public string String { get; set; }
+            public byte[] Binary { get; set; }
+        }
+
         public float Score { get; set; }
 
         private string uniqueIdentifierField = null;
@@ -42,11 +56,33 @@ namespace corelib.interchange.M2
             set { uniqueIdentifierField = value; }
         }
 
-        private List<InterchangeDocumentFieldInfo> properties = new List<InterchangeDocumentFieldInfo>();
-        public List<InterchangeDocumentFieldInfo> Properties
+        private List<IXDQResult> results = new List<IXDQResult>();
+        public List<IXDQResult> Results
         {
-            get { return properties; }
-            set { properties = value; }
+            get { return results; }
+            set { results = value; }
+        }
+
+        public Value this[string index]
+        {
+            get
+            {
+                if (results == null || results.Count < 1)
+                    return null;
+
+                IXDQResult val = results.FirstOrDefault(p => p.Name == index);
+                
+                if (val == null)
+                    return null;
+                else
+                {
+                    return new Value()
+                                    {
+                                        String = (val.IsEncoded) ? null : val.Value,
+                                        Binary =(val.IsEncoded) ? Convert.FromBase64String(val.Value) : null
+                                    };
+                }
+            }
         }
 
         public IXDQ(string uniqueIdentifierField)
@@ -55,27 +91,32 @@ namespace corelib.interchange.M2
                 throw new ArgumentNullException("uniqueIdentifierField");
         }
 
-        public IXDQ(string uniqueIdentifierField, IEnumerable<InterchangeDocumentFieldInfo> fields)
+        public IXDQ(string uniqueIdentifierField, IEnumerable<IXDQResult> results)
         {
-            if (fields == null)
-                throw new ArgumentNullException("fields");
+            if (results == null)
+                throw new ArgumentNullException("results");
 
-            if (String.IsNullOrEmpty(uniqueIdentifierField) || !fields.Any(p => p.Name == uniqueIdentifierField))
+            if (String.IsNullOrEmpty(uniqueIdentifierField) || !results.Any(p => p.Name == uniqueIdentifierField))
                 throw new ArgumentNullException("uniqueIdentifierField");
 
-            properties.AddRange(fields);
+            this.results.AddRange(results);
         }
 
-        public string Get(string key)
+        public Value Get(string key)
         {
-            InterchangeDocumentFieldInfo f = properties.SingleOrDefault(p => p.Name == key);
-            return (f == null) ? null : f.StringValue;
+            return this[key];
+        }
+
+        public string GetString(string key)
+        {
+            IXDQResult f = results.FirstOrDefault(p => p.Name == key);
+            return (f == null) ? null : f.Value;
         }
 
         public byte[] GetBinary(string key)
         {
-            InterchangeDocumentFieldInfo f = properties.SingleOrDefault(p => p.Name == key);
-            return (f == null) ? null : f.BinaryValue;
+            IXDQResult f = results.FirstOrDefault(p => p.Name == key);
+            return (f == null) ? null : (f.IsEncoded) ? Convert.FromBase64String(f.Value) : null;
         }
     }
 }
