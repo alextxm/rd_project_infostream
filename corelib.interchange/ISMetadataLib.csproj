@@ -7,10 +7,14 @@
     <ProjectGuid>{4EA1BC0D-A4BC-4646-A571-9C00F4FAD9CE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>corelib.interchange</RootNamespace>
-    <AssemblyName>corelib.interchange</AssemblyName>
+    <RootNamespace>InfoStream.Metadata</RootNamespace>
+    <AssemblyName>ISMetadataLib</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <SccProjectName>PlasticSCM</SccProjectName>
+    <SccLocalPath>PlasticSCM</SccLocalPath>
+    <SccAuxPath>PlasticSCM</SccAuxPath>
+    <SccProvider>Plastic SCM Source Control Service:{774e58ba-f1b9-40a7-b676-834fa2c220fe}</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,12 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IXDR.cs" />
-    <Compile Include="DataInterchange.cs" />
-    <Compile Include="IXDB.cs" />
-    <Compile Include="IXDQ.cs" />
+    <Compile Include="IXRequest.cs" />
+    <Compile Include="IXDescriptor.cs" />
+    <Compile Include="IXQuery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Structures.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

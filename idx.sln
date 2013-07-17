@@ -2,26 +2,54 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "idx", "idx\idx.csproj", "{00327A43-7A22-4AF1-B4F1-005073440A45}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "corelib", "corelib\corelib.csproj", "{24CDFE16-EA5C-428E-B6BC-3C8FCF73AA3B}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreService", "CoreService\CoreService.csproj", "{510A91B0-E3E1-4E3F-9D4E-3A1B6220722F}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8B3B0D7B-436A-4A5B-AE56-5F0E7457D486}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "corelib.interchange", "corelib.interchange\corelib.interchange.csproj", "{4EA1BC0D-A4BC-4646-A571-9C00F4FAD9CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISMetadataLib", "corelib.interchange\ISMetadataLib.csproj", "{4EA1BC0D-A4BC-4646-A571-9C00F4FAD9CE}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "idxws", "idxws\idxws.csproj", "{497D2CF9-FD26-4B6D-919C-5BC5F7F2546B}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 	ProjectSection(ProjectDependencies) = postProject
 		{510A91B0-E3E1-4E3F-9D4E-3A1B6220722F} = {510A91B0-E3E1-4E3F-9D4E-3A1B6220722F}
 	EndProjectSection
 EndProject
 Global
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

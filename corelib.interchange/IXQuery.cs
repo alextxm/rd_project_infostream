@@ -5,9 +5,9 @@ using System.Text;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 
-namespace corelib.interchange.M2
+namespace InfoStream.Metadata
 {
-    public enum IXDQResultStatus : int
+    public enum IXQueryStatus : int
     {
         [EnumMember]
         Success = 0,
@@ -21,25 +21,25 @@ namespace corelib.interchange.M2
         ErrorInternal = 11
     }
 
-    [ServiceKnownType(typeof(IXDQResultStatus))]
-    [ServiceKnownType(typeof(IXDQ))] 
-    public sealed class IXDQCollection
+    [ServiceKnownType(typeof(IXQueryStatus))]
+    [ServiceKnownType(typeof(IXQuery))] 
+    public sealed class IXQueryCollection
     {
         public int Count { get; set; }
         public int Start { get; set; }
         public int Take { get; set; }
-        public IXDQResultStatus ResultStatus { get; set; }
-        public IEnumerable<IXDQ> Elements { get; set; }
+        public IXQueryStatus ResultStatus { get; set; }
+        public IEnumerable<IXQuery> Elements { get; set; }
     }
 
-    public sealed class IXDQResult
+    public sealed class IXQueryResult
     {
         public string Name { get; set; }
         public string Value { get; set; }
         public bool IsEncoded { get; set; }
     }
 
-    public sealed class IXDQ
+    public sealed class IXQuery
     {
         public sealed class Value
         {
@@ -56,8 +56,8 @@ namespace corelib.interchange.M2
             set { uniqueIdentifierField = value; }
         }
 
-        private List<IXDQResult> results = new List<IXDQResult>();
-        public List<IXDQResult> Results
+        private List<IXQueryResult> results = new List<IXQueryResult>();
+        public List<IXQueryResult> Results
         {
             get { return results; }
             set { results = value; }
@@ -70,7 +70,7 @@ namespace corelib.interchange.M2
                 if (results == null || results.Count < 1)
                     return null;
 
-                IXDQResult val = results.FirstOrDefault(p => p.Name == index);
+                IXQueryResult val = results.FirstOrDefault(p => p.Name == index);
                 
                 if (val == null)
                     return null;
@@ -85,13 +85,13 @@ namespace corelib.interchange.M2
             }
         }
 
-        public IXDQ(string uniqueIdentifierField)
+        public IXQuery(string uniqueIdentifierField)
         {
             if (String.IsNullOrEmpty(uniqueIdentifierField))
                 throw new ArgumentNullException("uniqueIdentifierField");
         }
 
-        public IXDQ(string uniqueIdentifierField, IEnumerable<IXDQResult> results)
+        public IXQuery(string uniqueIdentifierField, IEnumerable<IXQueryResult> results)
         {
             if (results == null)
                 throw new ArgumentNullException("results");
@@ -109,13 +109,13 @@ namespace corelib.interchange.M2
 
         public string GetString(string key)
         {
-            IXDQResult f = results.FirstOrDefault(p => p.Name == key);
+            IXQueryResult f = results.FirstOrDefault(p => p.Name == key);
             return (f == null) ? null : f.Value;
         }
 
         public byte[] GetBinary(string key)
         {
-            IXDQResult f = results.FirstOrDefault(p => p.Name == key);
+            IXQueryResult f = results.FirstOrDefault(p => p.Name == key);
             return (f == null) ? null : (f.IsEncoded) ? Convert.FromBase64String(f.Value) : null;
         }
     }

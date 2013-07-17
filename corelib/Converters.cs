@@ -11,41 +11,22 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection.Emit;
 
-using Blackbird.Core.Runtime;
 using Lucene.Net.Documents;
 
-using corelib.Interchange;
-using corelib.interchange.M2;
+using InfoStream.Metadata;
 
-namespace corelib
+namespace InfoStream.Core
 {
-    internal static class ExtensionsM2
-    {
-        public static IXDQ ToIXDQ(this Document doc, string IEnumerable<string> selectedFields)
-        {
-            IQueryable<IFieldable> fields = doc.GetFields().Where(p => p.Name!="").AsQueryable();
-            IXDQ iDoc = new IXDQ(doc.
-            
-
-            if (selectedFields != null && selectedFields.Count() > 0)
-                fields = fields.Where(p => selectedFields.Contains(p.Name));
-
-            fields.ToList().ForEach(f => iDoc.Results.Add(new IXDQResult()
-                                                                {
-                                                                    Name = f.Name,
-                                                                    Value = (!f.IsBinary) ? f.StringValue : Convert.ToBase64String(f.GetBinaryValue()),
-                                                                    IsEncoded = f.IsBinary
-                                                                }));
-
-            return iDoc;
-        }
-    }
-
     /// <summary>
-    /// convertitori tra InterchangeXXXXXX e gli equivalenti Lucene
+    /// convertitori tra IX* e gli equivalenti Lucene
     /// </summary>
-    internal static class Extensions
+    internal static class IndexerExtensions
     {
+        internal static readonly string DocumentUniqueIdentifierFieldName
+        {
+            get { return "$FB::ISIDX$UniqueIdentifier$"; }
+        }
+
         public static Field.Store ToFieldStore(this FieldStore store)
         {
             return (store == FieldStore.YES) ? Field.Store.YES : Field.Store.NO;
@@ -73,7 +54,7 @@ namespace corelib
             }
         }
 
-        public static Field ToField(this InterchangeDocumentFieldInfo idfield)
+        public static Field ToField(this IXDescriptorProperty idfield)
         {
             if (idfield.IsBinary)
                 return new Field(idfield.Name, idfield.BinaryValue, 0, idfield.BinaryValue.Length, idfield.Store.ToFieldStore());
@@ -92,34 +73,41 @@ namespace corelib
                 return (fieldable.OmitNorms) ? FieldIndex.NOT_ANALYZED_NO_NORMS : FieldIndex.NOT_ANALYZED;
         }
 
-        public static InterchangeDocument ToInterchangeDocument<T>(this Document doc, IndexableObjectHandler<T> ioh, IEnumerable<string> selectedFields)
+        public static IXQuery ToIXQuery(this Document doc, string uniqueIdentifierField, IEnumerable<string> selectedFields)
         {
-            InterchangeDocument iDoc = new InterchangeDocument(ioh.DataItemUniqueIdentifierField);
-            IQueryable<IFieldable> fields = doc.GetFields().AsQueryable();
-            
-            if(selectedFields!=null && selectedFields.Count()>0)
+            IQueryable<IFieldable> fields = doc.GetFields().Where(p => p.Name != uniqueIdentifierField).AsQueryable();
+            IXQuery iDoc = new IXQuery(uniqueIdentifierField);
+
+            if (selectedFields != null && selectedFields.Count() > 0)
                 fields = fields.Where(p => selectedFields.Contains(p.Name));
-               
-            fields.ToList().ForEach(f => iDoc.Properties.Add(new InterchangeDocumentFieldInfo()
-                                                                            {
-                                                                                Name = f.Name,
-                                                                                StringValue = (f.IsBinary) ? String.Empty : f.StringValue,
-                                                                                BinaryValue = (f.IsBinary) ? f.GetBinaryValue() : null,
-                                                                                Store = f.IsStored ? FieldStore.YES : FieldStore.NO,
-                                                                                Index = f.ToFieldIndex()
-                                                                            }
-                                                                     ));
+
+            fields.ToList().ForEach(f => iDoc.Results.Add(new IXQueryResult()
+            {
+                Name = f.Name,
+                Value = (!f.IsBinary) ? f.StringValue : Convert.ToBase64String(f.GetBinaryValue()),
+                IsEncoded = f.IsBinary
+            }));
 
             return iDoc;
         }
 
-        public static Document ToDocument(this InterchangeDocument idoc)
+        public static string UniqueIdentifierValue(this IXDescriptor descriptor)
+        {
+            IXDescriptorProperty unique = descriptor.Properties.FirstOrDefault(p => p.Name == descriptor.UniqueIdentifierField);
+            return (unique.IsBinary) ? Convert.ToBase64String(unique.BinaryValue) : unique.StringValue;
+        }
+
+        public static Document ToDocument(this IXDescriptor descriptor, string uniqueValue=null)
         {
             Document doc = new Document();
+
+            doc.Add(new Field(  DocumentUniqueIdentifierFieldName,
+                                (uniqueValue==null) ? descriptor.UniqueIdentifierValue() : uniqueValue, 
+                                Field.Store.YES, 
+                                Field.Index.NOT_ANALYZED
+                    ));
             
-            //doc.Add(new Field("IOH$UniqueIdentifier", idoc.UniqueIdentifier.ToString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
-            
-            foreach (InterchangeDocumentFieldInfo f in idoc.Properties)
+            foreach (IXDescriptorProperty f in descriptor.Properties.Where(p => p.Name != descriptor.UniqueIdentifierField))
                 doc.Add(f.ToField());
 
             return doc;

@@ -20,6 +20,10 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <SccProjectName>PlasticSCM</SccProjectName>
+    <SccLocalPath>PlasticSCM</SccLocalPath>
+    <SccAuxPath>PlasticSCM</SccAuxPath>
+    <SccProvider>Plastic SCM Source Control Service:{774e58ba-f1b9-40a7-b676-834fa2c220fe}</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -83,9 +87,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\corelib.interchange\corelib.interchange.csproj">
+    <ProjectReference Include="..\corelib.interchange\ISMetadataLib.csproj">
       <Project>{4ea1bc0d-a4bc-4646-a571-9c00f4fad9ce}</Project>
-      <Name>corelib.interchange</Name>
+      <Name>ISMetadataLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\corelib\corelib.csproj">
       <Project>{24cdfe16-ea5c-428e-b6bc-3c8fcf73aa3b}</Project>

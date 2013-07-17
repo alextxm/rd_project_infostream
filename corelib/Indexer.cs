@@ -17,9 +17,9 @@ using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 
-using corelib.interchange.M2;
+using InfoStream.Metadata;
 
-namespace corelib
+namespace InfoStream.Core
 {
     /// <summary>
     /// implementazione del sistema di indicizzazione e ricerca
@@ -105,7 +105,7 @@ namespace corelib
         }
 
         protected event IndexSearcherUpdateHandler OnIndexSearcherUpdateRequested = null;
-        protected IXDQCollection EmptySearchResult = new IXDQCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXDQ[]{}, ResultStatus = IXDQResultStatus.Fail };
+        protected IXQueryCollection EmptySearchResult = new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXQuery[]{}, ResultStatus = IXQueryStatus.Fail };
 
         #region public properties
         public bool UseScoring { get; set; }
@@ -190,7 +190,7 @@ namespace corelib
         /// get all indexed records
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<T> GetAllIndexRecords()
+        public IXQueryCollection GetAllIndexRecords()
         {
             List<Document> docs = new List<Document>();
 
@@ -217,78 +217,12 @@ namespace corelib
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public IXDQCollection Search(IXDR request)
+        public IXQueryCollection Search(IXRequest request)
         {
-            if (String.IsNullOrEmpty(input))
+            if (request == null || String.IsNullOrEmpty(request.Query))
                 return EmptySearchResult;
 
-            //IEnumerable<string> terms = input.Trim().Replace("-", " ").Split(' ').Where(x => !String.IsNullOrEmpty(x)).Select(x => x.Trim() + "*");
-            IEnumerable<string> terms = input.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Where(x => !String.IsNullOrEmpty(x)).Select(x => x.Trim());
-            input = String.Join(" ", terms);
-
-            return DoSearch(input, new string[] { fieldName }, skip, take);
-        }
-
-        /// <summary>
-        /// search for a specific record
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="fieldName"></param>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
-        /// <param name="selectedFields"></param>
-        /// <returns></returns>
-        public IndexerSearchResults<T> SearchDefault(string input, string fieldName = null, int skip = 0, int take = 0, IEnumerable<string> selectedFields = null)
-        {
-            return String.IsNullOrEmpty(input) ? EmptySearchResult : DoSearch(input, new string[] { fieldName }, skip, take);
-        }
-
-        /// <summary>
-        /// search for a specific record
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="fieldNames"></param>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
-        /// <param name="selectedFields"></param>
-        /// <returns></returns>
-        public IndexerSearchResults<T> Search(string input, IEnumerable<string> fieldNames, int skip = 0, int take = 0, IEnumerable<string> selectedFields = null)
-        {
-            if (String.IsNullOrEmpty(input))
-                return EmptySearchResult;
-
-            //IEnumerable<string> terms = input.Trim().Replace("-", " ").Split(' ').Where(x => !String.IsNullOrEmpty(x)).Select(x => x.Trim() + "*");
-            IEnumerable<string> terms = input.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Where(x => !String.IsNullOrEmpty(x)).Select(x => x.Trim());
-            input = String.Join(" ", terms);
-
-            return DoSearch(input, fieldNames, skip, take);
-        }
-
-        /// <summary>
-        /// search for a specific record
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="fieldNamse"></param>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
-        /// <param name="selectedFields"></param>
-        /// <returns></returns>
-        public IndexerSearchResults<T> SearchDefault(string input, IEnumerable<string> fieldNames, int skip = 0, int take = 0, IEnumerable<string> selectedFields = null)
-        {
-            return String.IsNullOrEmpty(input) ? EmptySearchResult : DoSearch(input, fieldNames, skip, take);
-        }
-
-        /// <summary>
-        /// search for a specific record
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
-        /// <param name="selectedFields"></param>
-        /// <returns></returns>
-        public IndexerSearchResults<T> SearchDefault(string input, int skip = 0, int take = 0, IEnumerable<string> selectedFields = null)
-        {
-            return String.IsNullOrEmpty(input) ? EmptySearchResult : DoSearch(input, null, skip, take);
+            return DoSearch(request);
         }
 
         /// <summary>
@@ -297,9 +231,9 @@ namespace corelib
         /// <param name="dataItem"></param>
         /// <param name="waitForIndex"></param>
         /// <returns></returns>
-        public bool AddUpdateLuceneIndex(T dataItem, bool waitForIndex=false)
+        public bool AddUpdateLuceneIndex(IXDescriptor dataItem, bool waitForIndex=false)
         {
-            return AddUpdateLuceneIndex(new T[] { dataItem }, waitForIndex);
+            return AddUpdateLuceneIndex(new IXDescriptor[] { dataItem }, waitForIndex);
         }
 
         /// <summary>
@@ -308,7 +242,7 @@ namespace corelib
         /// <param name="dataItems"></param>
         /// <param name="waitForIndex"></param>
         /// <returns></returns>
-        public bool AddUpdateLuceneIndex(IEnumerable<T> dataItems, bool waitForIndex=false)
+        public bool AddUpdateLuceneIndex(IEnumerable<IXDescriptor> dataItems, bool waitForIndex=false)
         {
             if (waitForIndex)
                 while (IndexWriter.IsLocked(luceneIndexDirectory)) { }
@@ -323,20 +257,17 @@ namespace corelib
                 using (IndexWriter indexWriter = new IndexWriter(luceneIndexDirectory, analyzer, IndexWriter.MaxFieldLength.UNLIMITED))
                 {
                     // add data to lucene search index (replaces older entries if any)
-                    foreach (T dataItem in dataItems)
+                    foreach (IXDescriptor dataItem in dataItems)
                     {
                         // remove older index entry
                         // do not call DeleteFromIndex here otherwise it could clash on lock files
-                        TermQuery searchQuery = new TermQuery(new Term(dataItemHandler.DataItemUniqueIdentifierField, dataItemHandler.DataItemUniqueIdentifierValue(dataItem).ToString()));
+                        string identifier = dataItem.UniqueIdentifierValue();
+                        TermQuery searchQuery = new TermQuery(new Term(IndexerExtensions.DocumentUniqueIdentifierFieldName, identifier);
                         if (searchQuery != null)
                             indexWriter.DeleteDocuments(searchQuery);
 
                         // add new index entry with lucene fields mapped to db fields
-                        Document doc = (tType==typeof(InterchangeDocument)) ? (dataItem as InterchangeDocument).ToDocument() : dataItemHandler.DocumentParseFromDataItem(dataItem).ToDocument();
-
-                        // add lucene fields mapped to db fields
-                        //foreach (InterchangeDocumentFieldInfo f in dataItemHandler.FieldsParseFromDataItem(dataItem))
-                        //    doc.Add(f.ToField());
+                        Document doc = dataItem.ToDocument(identifier); // non ricalcolare l'UID ma riusalo
 
                         // add entry to index
                         indexWriter.AddDocument(doc);
@@ -363,6 +294,9 @@ namespace corelib
         {
             bool ret = false;
 
+            if (dataItemIdentifier == null || String.IsNullOrEmpty(dataItemIdentifier.ToString()))
+                return false;
+
             if (waitForIndex)
                 while (IndexWriter.IsLocked(luceneIndexDirectory)) { }
             else
@@ -376,7 +310,7 @@ namespace corelib
                 using (IndexWriter indexWriter = new IndexWriter(luceneIndexDirectory, analyzer, IndexWriter.MaxFieldLength.UNLIMITED))
                 {
                     // remove older index entry
-                    TermQuery searchQuery = new TermQuery(new Term(dataItemHandler.DataItemUniqueIdentifierField, dataItemIdentifier.ToString()));
+                    TermQuery searchQuery = new TermQuery(new Term(IndexerExtensions.DocumentUniqueIdentifierFieldName, dataItemIdentifier.ToString()));
                     if (searchQuery != null)
                         indexWriter.DeleteDocuments(searchQuery);
                 }
@@ -493,11 +427,11 @@ namespace corelib
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        protected IXDQCollection DoSearch(IXDR request)
+        protected IXQueryCollection DoSearch(IXRequest request)
         {
             // validation
             if (String.IsNullOrEmpty(request.Query.Replace("*", "").Replace("?", "")))
-                return new IXDQCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXDQ[] { }, ResultStatus = IXDQResultStatus.ErrorQuerySyntax };
+                return new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXQuery[] { }, ResultStatus = IXQueryStatus.ErrorQuerySyntax };
 
             QueryParser parser = null;
 
@@ -511,7 +445,7 @@ namespace corelib
             Query query = ParseQuery(request.Query, parser);
 
             if (query == null)
-                return new IXDQCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXDQ[] { }, ResultStatus = IXDQResultStatus.ErrorQuerySyntax };;
+                return new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXQuery[] { }, ResultStatus = IXQueryStatus.ErrorQuerySyntax };;
 
             if(UseScoring)
                 indexSearcher.SetDefaultFieldSortScoring(true, true);
@@ -529,13 +463,13 @@ namespace corelib
             if (take < 1)
                 take = this.MaxSearchHits;
 
-            return new IXDQCollection
+            return new IXQueryCollection
                             { 
                                 Elements = MapLuceneIndexToDataList(hits.ScoreDocs.Skip(skip).Take(take), indexSearcher), 
                                 Start = skip, 
                                 Take = take, 
                                 Count = hits.TotalHits, 
-                                ResultStatus = (hits.TotalHits>0) ? IXDQResultStatus.Success : IXDQResultStatus.NoData
+                                ResultStatus = (hits.TotalHits>0) ? IXQueryStatus.Success : IXQueryStatus.NoData
                             };
         }
 
@@ -582,9 +516,17 @@ namespace corelib
         /// </summary>
         /// <param name="hits"></param>
         /// <returns></returns>
-        protected IEnumerable<IXDQ> MapLuceneIndexToDataList(IEnumerable<Document> hits, IEnumerable<string> selectedFields = null)
+        protected IXQueryCollection MapLuceneIndexToDataList(IEnumerable<Document> hits, IEnumerable<string> selectedFields = null)
         {
-            return hits.Select(p => p.ToIXDQ(selectedFields)).ToList();
+            IEnumerable<IXQuery> results = hits.Select(p => p.ToIXQuery(selectedFields)).ToList();
+            return new IXQueryCollection()
+                        {
+                            Count = (results==null) ? 0 : results.Count(), 
+                            Start = 0, 
+                            Take = 0,
+                            Elements = (results==null) ? new IXQuery[]{} : results, 
+                            ResultStatus = (results==null || results.Count()<1) ? IXQueryStatus.NoData : IXQueryStatus.Success
+                        };
         }
 
         /// <summary>
