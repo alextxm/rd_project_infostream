@@ -7,6 +7,15 @@ using System.Text;
 
 namespace InfoStream.Metadata
 {
+    [Flags]
+    public enum FieldFlags
+    {
+        [EnumMember]
+        NONE,
+        [EnumMember]
+        UNIQUEID
+    }
+
     public enum FieldStore
     {
         [EnumMember]
@@ -35,39 +44,57 @@ namespace InfoStream.Metadata
     [Serializable]
     public sealed class IXDescriptor
     {
-        private string uniqueIdentifierField = null;
-        public string UniqueIdentifierField
+        public sealed class PropertyInfo
         {
-            get { return uniqueIdentifierField; }
-            set { uniqueIdentifierField = value; }
+            public string Name { get; set; }
+            public string Value { get; set; }
         }
 
         private List<IXDescriptorProperty> properties = new List<IXDescriptorProperty>();
         public List<IXDescriptorProperty> Properties
         {
             get { return properties; }
-            set { properties = value; }
+            set
+            {
+                if(value!=null)
+                    properties = value;
+            }
         }
 
-        public IXDescriptor(string uniqueIdentifierField)
+        public PropertyInfo UniqueIdentifier
         {
-            if (String.IsNullOrEmpty(uniqueIdentifierField))
-                throw new ArgumentNullException("uniqueIdentifierField");
+            get
+            {
+                IXDescriptorProperty ip = properties.SingleOrDefault(p => ((p.Flags & FieldFlags.UNIQUEID) == FieldFlags.UNIQUEID));
+                return (ip==null) ? new PropertyInfo() : new PropertyInfo() { Name = ip.Name, Value = ip.SafeValue };
+            }
         }
 
-        public IXDescriptor(string uniqueIdentifierField, IEnumerable<IXDescriptorProperty> fields)
+        public IXDescriptor(IEnumerable<IXDescriptorProperty> fields)
         {
-            if (fields == null)
+            if (fields == null || fields.Count() < 1)
                 throw new ArgumentNullException("fields");
 
-            if (String.IsNullOrEmpty(uniqueIdentifierField) || !fields.Any(p => p.Name == uniqueIdentifierField))
-                throw new ArgumentNullException("uniqueIdentifierField");
+            if (fields.Count(p => (p.Flags & FieldFlags.UNIQUEID) == FieldFlags.UNIQUEID) != 1)
+                throw new TypeInitializationException(typeof(IXDescriptor).FullName, new Exception("fields must include a UNIQUEID")); 
+
+            properties.AddRange(fields);
+        }
+
+        public IXDescriptor(params IXDescriptorProperty[] fields)
+        {
+            if (fields == null || fields.Count() < 1)
+                throw new ArgumentNullException("fields");
+
+            if (fields.Count(p => (p.Flags & FieldFlags.UNIQUEID) == FieldFlags.UNIQUEID) != 1)
+                throw new TypeInitializationException(typeof(IXDescriptor).FullName, new Exception("fields must include a UNIQUEID"));
 
             properties.AddRange(fields);
         }
     }
 
     [Serializable]
+    [ServiceKnownType(typeof(FieldFlags))]
     [ServiceKnownType(typeof(FieldStore))]
     [ServiceKnownType(typeof(FieldIndex))]
     public sealed class IXDescriptorProperty
@@ -79,7 +106,15 @@ namespace InfoStream.Metadata
         {
             get { return (BinaryValue == null) ? false : true; }
         }
+        public string SafeValue
+        {
+            get
+            {
+                return (IsBinary) ? Convert.ToBase64String(BinaryValue) : StringValue;
+            }
+        }
 
+        public FieldFlags Flags { get; set; }
         public FieldStore Store { get; set; }
         public FieldIndex Index { get; set; }
 
@@ -87,11 +122,12 @@ namespace InfoStream.Metadata
         {
         }
 
-        public IXDescriptorProperty(string name, string value, byte[] binaryValue, FieldStore store, FieldIndex index)
+        public IXDescriptorProperty(string name, string value, byte[] binaryValue, FieldFlags flags, FieldStore store, FieldIndex index)
         {
             this.Name = name;
             this.StringValue = (binaryValue == null) ? value : null;
             this.BinaryValue = (binaryValue == null) ? null : binaryValue;
+            this.Flags = flags;
             this.Store = store;
             this.Index = index;
         }

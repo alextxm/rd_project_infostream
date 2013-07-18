@@ -6,8 +6,8 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 
-using corelib;
-using corelib.Interchange;
+using InfoStream.Core;
+using InfoStream.Metadata;
 
 namespace CoreService
 {
@@ -16,40 +16,25 @@ namespace CoreService
     //[ServiceBehavior(InstanceContextMode.Single)]
     public class Service1 : IService1
     {
-        private IndexerInterop<InterchangeDocument> li = null;
+        private ISIndexer indexer = null;
         public Service1()
         {
-            li = CacheManager.GetDataCache();
+            indexer = CacheManager.GetDataCache();
         }
 
-        public InterchangeDocumentsCollection SearchData(string query, int skip, int take, bool useScoring, IEnumerable<string> filteredFields)
+        public IXQueryCollection SearchData(IXRequest request)
         {
-            InterchangeDocumentsCollection coll = new InterchangeDocumentsCollection() { Result=false, Start=0, Take=0, InterchangeDocuments=null, Count=0 };
-
-            if (take <= 0)
-                take = 10;
-
-            if (skip <= 0)
-                skip = 0;
-
-            if(String.IsNullOrEmpty(query))
-                return coll;
-
-            IndexerSearchResults<InterchangeDocument> results = li.Search(query, String.Empty, skip, take, filteredFields);
-            coll.InterchangeDocuments = results.ScoreDocs.Select(p => new InterchangeDocumentInfo() { Score = p.Score, Element = p.Element });
-            coll.Count = results.Count;
-
-            return coll;
+            return indexer.Search(request);   
         }
 
-        public bool AddUpdateData(IEnumerable<InterchangeDocument> documents)
-        {
-           return li.AddUpdateLuceneIndex(documents, true);
-        }
+        //public bool AddUpdateData(IEnumerable<InterchangeDocument> documents)
+        //{
+        //   return li.AddUpdateLuceneIndex(documents, true);
+        //}
 
-        public bool RemoveData(IEnumerable<InterchangeDocument> documents)
-        {
-            return li.DeleteFromIndex(documents.ElementAt(0));
-        }
+        //public bool RemoveData(IEnumerable<InterchangeDocument> documents)
+        //{
+        //    return li.DeleteFromIndex(documents.ElementAt(0));
+        //}
     }
 }

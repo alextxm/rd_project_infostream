@@ -24,8 +24,9 @@ namespace InfoStream.Core
     /// <summary>
     /// implementazione del sistema di indicizzazione e ricerca
     /// </summary>
-    public class IndexerInterop : IDisposable
+    public class ISIndexer : IDisposable
     {
+        private string indexerDocumentUniqueIdentifierFieldName = "$FB::ISIDX$UniqueIdentifier$";
         protected delegate void IndexSearcherUpdateHandler(object sender, EventArgs e);
 
         protected IndexerStorageMode indexMode = IndexerStorageMode.FS;
@@ -54,7 +55,7 @@ namespace InfoStream.Core
                         else if (indexMode == IndexerStorageMode.FSRAM)
                         {
                             // if the index does not exists operate like it was a full RAM-based index
-                            if (!_directoryInfo.Exists)
+                            if (!_directoryInfo.Exists || _directoryInfo.GetFiles().Count() < 1)
                             {
                                 _directoryTemp = new RAMDirectory();
                                 DoFSIndexCreation(indexMode, _directoryInfo, _directoryTemp, analyzer); // do THIS BEFORE opening the RAMDirectory otherwise we'll get a crash
@@ -105,10 +106,9 @@ namespace InfoStream.Core
         }
 
         protected event IndexSearcherUpdateHandler OnIndexSearcherUpdateRequested = null;
-        protected IXQueryCollection EmptySearchResult = new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXQuery[]{}, ResultStatus = IXQueryStatus.Fail };
+        protected IXQueryCollection EmptySearchResult = new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Results = new IXQuery[]{}, Status = IXQueryStatus.Fail };
 
         #region public properties
-        public bool UseScoring { get; set; }
         public int MaxSearchHits { get; set; }
 
         /// <summary>
@@ -134,6 +134,11 @@ namespace InfoStream.Core
                 return count;
             }
         }
+
+        protected string IndexerDocumentUniqueIdentifierFieldName
+        {
+            get { return indexerDocumentUniqueIdentifierFieldName; }
+        }
         #endregion
 
         #region constructors
@@ -144,8 +149,8 @@ namespace InfoStream.Core
         /// <param name="analyzer"></param>
         /// <param name="dataItemHandler"></param>
         /// <param name="perFieldAnalyzers"></param>
-        public IndexerInterop(IndexerStorageMode indexMode, IndexerAnalyzer analyzer, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
-            : this(null, indexMode, analyzer, perFieldAnalyzers)
+        public ISIndexer(IndexerStorageMode indexMode, IndexerAnalyzer analyzer, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
+            : this(null, indexMode, null, analyzer, perFieldAnalyzers)
         {
         }
 
@@ -157,18 +162,32 @@ namespace InfoStream.Core
         /// <param name="analyzer"></param>
         /// <param name="dataItemHandler"></param>
         /// <param name="perFieldAnalyzers"></param>
-        public IndexerInterop(string indexFullPath, IndexerStorageMode indexMode, IndexerAnalyzer analyzer, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
+        public ISIndexer(string indexFullPath, IndexerStorageMode indexMode, IndexerAnalyzer analyzer, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
+            : this(indexFullPath, indexMode, null, analyzer, perFieldAnalyzers)
+        {
+        }
+
+        /// <summary>
+        /// constructor
+        /// </summary>
+        /// <param name="indexFullPath"></param>
+        /// <param name="indexMode"></param>
+        /// <param name="indexerDocumentUniqueIdentifier"></param>
+        /// <param name="analyzer"></param>
+        /// <param name="dataItemHandler"></param>
+        /// <param name="perFieldAnalyzers"></param>
+        public ISIndexer(string indexFullPath, IndexerStorageMode indexMode, string indexerDocumentUniqueIdentifier, IndexerAnalyzer analyzer, Dictionary<string, IndexerAnalyzer> perFieldAnalyzers = null)
         {
             this.indexMode = indexMode;
 
-            if(analyzer != IndexerAnalyzer.PerFieldAnalyzerWrapper)
+            if (analyzer != IndexerAnalyzer.PerFieldAnalyzerWrapper)
                 this.analyzer = GetAnalyzer(analyzer, false);
             else
             {
                 this.analyzer = GetAnalyzer(analyzer, false);
-                if(perFieldAnalyzers!=null)
+                if (perFieldAnalyzers != null)
                 {
-                    foreach(KeyValuePair<string,IndexerAnalyzer> kvp in perFieldAnalyzers)
+                    foreach (KeyValuePair<string, IndexerAnalyzer> kvp in perFieldAnalyzers)
                         (this.analyzer as PerFieldAnalyzerWrapper).AddAnalyzer(kvp.Key, GetAnalyzer(kvp.Value, true));
                 }
             }
@@ -178,6 +197,9 @@ namespace InfoStream.Core
 
             if (luceneIndexDirectory == null)
                 throw new System.IO.IOException("unable to setup indexing folder");
+
+            if (!String.IsNullOrEmpty(indexerDocumentUniqueIdentifier))
+                this.indexerDocumentUniqueIdentifierFieldName = indexerDocumentUniqueIdentifier;
 
             this.indexSearcher = new IndexSearcher(luceneIndexDirectory, true);
             this.OnIndexSearcherUpdateRequested += IndexSearcherUpdater;
@@ -190,17 +212,24 @@ namespace InfoStream.Core
         /// get all indexed records
         /// </summary>
         /// <returns></returns>
-        public IXQueryCollection GetAllIndexRecords()
+        public IXQueryCollection GetAllIndexRecords(IEnumerable<string> fields)
         {
             List<Document> docs = new List<Document>();
 
-            // set up lucene searcher
+            // set up searcher
             TermDocs term = indexSearcher.IndexReader.TermDocs();
 
             while (term.Next())
                 docs.Add(indexSearcher.Doc(term.Doc));
 
-            return MapLuceneIndexToDataList(docs);
+            return new IXQueryCollection
+            {
+                Results = MapLuceneIndexToDataList(docs, fields),
+                Start = 0,
+                Take = -1,
+                Count = docs.Count,
+                Status = (docs.Count > 0) ? IXQueryStatus.Success : IXQueryStatus.NoData
+            };
         }
 
         /// <summary>
@@ -261,13 +290,13 @@ namespace InfoStream.Core
                     {
                         // remove older index entry
                         // do not call DeleteFromIndex here otherwise it could clash on lock files
-                        string identifier = dataItem.UniqueIdentifierValue();
-                        TermQuery searchQuery = new TermQuery(new Term(IndexerExtensions.DocumentUniqueIdentifierFieldName, identifier);
+                        IXDescriptor.PropertyInfo identifier = dataItem.UniqueIdentifier;
+                        TermQuery searchQuery = new TermQuery(new Term(identifier.Name, identifier.Value));
                         if (searchQuery != null)
                             indexWriter.DeleteDocuments(searchQuery);
 
                         // add new index entry with lucene fields mapped to db fields
-                        Document doc = dataItem.ToDocument(identifier); // non ricalcolare l'UID ma riusalo
+                        Document doc = dataItem.ToDocument(indexerDocumentUniqueIdentifierFieldName);
 
                         // add entry to index
                         indexWriter.AddDocument(doc);
@@ -310,7 +339,9 @@ namespace InfoStream.Core
                 using (IndexWriter indexWriter = new IndexWriter(luceneIndexDirectory, analyzer, IndexWriter.MaxFieldLength.UNLIMITED))
                 {
                     // remove older index entry
-                    TermQuery searchQuery = new TermQuery(new Term(IndexerExtensions.DocumentUniqueIdentifierFieldName, dataItemIdentifier.ToString()));
+                    //FIXME: BUGGATO: deve utilizzare dataitems.Name ma non abbiamo dataitems!!!!!
+                    string safeValue = (dataItemIdentifier is byte[]) ? Convert.ToBase64String((byte[])dataItemIdentifier) : dataItemIdentifier.ToString();
+                    TermQuery searchQuery = new TermQuery(new Term(indexerDocumentUniqueIdentifierFieldName, safeValue));
                     if (searchQuery != null)
                         indexWriter.DeleteDocuments(searchQuery);
                 }
@@ -401,7 +432,7 @@ namespace InfoStream.Core
         /// <returns></returns>
         public bool UpdateMemoryIndexFromFS()
         {
-            if (indexMode != IndexerStorageMode.FSRAM)
+            if (indexMode == IndexerStorageMode.RAM)
                 return false;
 
             try
@@ -431,7 +462,7 @@ namespace InfoStream.Core
         {
             // validation
             if (String.IsNullOrEmpty(request.Query.Replace("*", "").Replace("?", "")))
-                return new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXQuery[] { }, ResultStatus = IXQueryStatus.ErrorQuerySyntax };
+                return new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Results = new IXQuery[] { }, Status = IXQueryStatus.ErrorQuerySyntax };
 
             QueryParser parser = null;
 
@@ -445,9 +476,10 @@ namespace InfoStream.Core
             Query query = ParseQuery(request.Query, parser);
 
             if (query == null)
-                return new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Elements = new IXQuery[] { }, ResultStatus = IXQueryStatus.ErrorQuerySyntax };;
+                return new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Results = new IXQuery[] { }, Status = IXQueryStatus.ErrorQuerySyntax };;
 
-            if(UseScoring)
+            bool useScoring = ((request.Flags & IXRequestFlags.UseScore) == IXRequestFlags.UseScore);
+            if (useScoring)
                 indexSearcher.SetDefaultFieldSortScoring(true, true);
             else
                 indexSearcher.SetDefaultFieldSortScoring(false, false);
@@ -464,12 +496,12 @@ namespace InfoStream.Core
                 take = this.MaxSearchHits;
 
             return new IXQueryCollection
-                            { 
-                                Elements = MapLuceneIndexToDataList(hits.ScoreDocs.Skip(skip).Take(take), indexSearcher), 
+                            {
+                                Results = MapLuceneIndexToDataList(hits.ScoreDocs.Skip(skip).Take(take), indexSearcher, useScoring, request.Fields), 
                                 Start = skip, 
                                 Take = take, 
                                 Count = hits.TotalHits, 
-                                ResultStatus = (hits.TotalHits>0) ? IXQueryStatus.Success : IXQueryStatus.NoData
+                                Status = (hits.TotalHits>0) ? IXQueryStatus.Success : IXQueryStatus.NoData
                             };
         }
 
@@ -515,18 +547,11 @@ namespace InfoStream.Core
         /// map Lucene search index to data
         /// </summary>
         /// <param name="hits"></param>
+        /// <param name="selectedFields"></param>
         /// <returns></returns>
-        protected IXQueryCollection MapLuceneIndexToDataList(IEnumerable<Document> hits, IEnumerable<string> selectedFields = null)
+        protected IEnumerable<IXQuery> MapLuceneIndexToDataList(IEnumerable<Document> hits, IEnumerable<string> selectedFields = null)
         {
-            IEnumerable<IXQuery> results = hits.Select(p => p.ToIXQuery(selectedFields)).ToList();
-            return new IXQueryCollection()
-                        {
-                            Count = (results==null) ? 0 : results.Count(), 
-                            Start = 0, 
-                            Take = 0,
-                            Elements = (results==null) ? new IXQuery[]{} : results, 
-                            ResultStatus = (results==null || results.Count()<1) ? IXQueryStatus.NoData : IXQueryStatus.Success
-                        };
+            return hits.Select(p => p.ToIXQuery(indexerDocumentUniqueIdentifierFieldName, selectedFields)).ToList();
         }
 
         /// <summary>
@@ -534,13 +559,12 @@ namespace InfoStream.Core
         /// </summary>
         /// <param name="hits"></param>
         /// <param name="searcher"></param>
+        /// <param name="useScoring"></param>
         /// <param name="selectedFields"></param>
         /// <returns></returns>
-        protected IEnumerable<IndexerSearchResultData<T>> MapLuceneIndexToDataList(IEnumerable<ScoreDoc> hits, IndexSearcher searcher, IEnumerable<string> selectedFields = null)
+        protected IEnumerable<IXQuery> MapLuceneIndexToDataList(IEnumerable<ScoreDoc> hits, IndexSearcher searcher, bool useScoring, IEnumerable<string> selectedFields = null)
         {
-            //Utils.CreateInstance<InterchangeDocument, Document>(searcher.Doc(hit.Doc))
-            return hits.Select(hit => new IndexerSearchResultData<T>() { Score = hit.Score, Element = dataItemHandler.BuildDataItem(searcher.Doc(hit.Doc).ToInterchangeDocument(dataItemHandler, selectedFields)) }).ToList();
-            //return hits.Select(hit => dataItemHandler.BuildDataItem(searcher.Doc(hit.Doc))).ToList();
+            return hits.Select(p => searcher.Doc(p.Doc).ToIXQuery(indexerDocumentUniqueIdentifierFieldName, selectedFields, ((useScoring) ? (float?)p.Score : null))).ToList();
         }
 
         /// <summary>
@@ -562,7 +586,7 @@ namespace InfoStream.Core
         /// </summary>
         protected void DoFSIndexCreation(IndexerStorageMode mode, DirectoryInfo di, Lucene.Net.Store.Directory directoryTemp, Analyzer analyzer)
         {
-            if (mode == IndexerStorageMode.RAM || di.Exists == false)
+            if (mode == IndexerStorageMode.RAM || di.Exists == false || di.GetFiles().Count()<1)
             {
                 using (IndexWriter indexWriter = new IndexWriter(directoryTemp, analyzer, IndexWriter.MaxFieldLength.UNLIMITED))
                 {
@@ -622,7 +646,7 @@ namespace InfoStream.Core
         #endregion
 
         #region IDisposable implementation
-        ~IndexerInterop()
+        ~ISIndexer()
         {
             Dispose(false);
         }
@@ -662,20 +686,4 @@ namespace InfoStream.Core
         }
         #endregion
     }
-
-#if DEPRECATED
-    public class IndexerSearchResultData<T>
-    {
-        public float Score { get; set; }
-        public T Element { get; set; }
-    }
-
-    public class IndexerSearchResults<T>
-    {
-        public int Count { get; set; }
-        public int Skip { get; set; }
-        public int Take { get; set; }
-        public IEnumerable<IndexerSearchResultData<T>> ScoreDocs { get; set; }
-    }
-#endif
 }

@@ -91,7 +91,7 @@
       <Project>{4ea1bc0d-a4bc-4646-a571-9c00f4fad9ce}</Project>
       <Name>ISMetadataLib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\corelib\corelib.csproj">
+    <ProjectReference Include="..\corelib\ISCore.csproj">
       <Project>{24cdfe16-ea5c-428e-b6bc-3c8fcf73aa3b}</Project>
       <Name>corelib</Name>
     </ProjectReference>

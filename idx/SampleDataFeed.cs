@@ -8,21 +8,19 @@ using System.Text;
 using System.IO;
 using System.Runtime.Serialization;
 
-using corelib;
-using corelib.Interchange;
+using InfoStream.Metadata;
 
 using Blackbird.Core;
 using Blackbird.Core.Serialization;
 using Blackbird.Core.Zib;
 
 
-namespace idx
+namespace ISClient
 {
     class SampleDataFeed
     {
         private readonly string sourceFile = "data.feed";
         private DataContractSerialization<IEnumerable<StaticDataFeed>> serializer = new DataContractSerialization<IEnumerable<StaticDataFeed>>();
-        
 
         public bool BuildStaticDataFeed()
         {
@@ -52,9 +50,14 @@ namespace idx
             int i = 1;
             List<StaticDataFeed> theFeed = new List<StaticDataFeed>();
 
+            Console.Write("Rebuilding data source feed; processing record ");
+            int origRow = Console.CursorTop;
+            int origCol = Console.CursorLeft;
+
             foreach (contenuti t in cl)
             {
-                Console.WriteLine("Processing record {0} of {1} [{2}]", i, cl.Count, t.id);
+                Blackbird.Core.ConsoleIO.ConsoleUtils.WriteAt(String.Format("{0} of {1} [{2}]     ", i, cl.Count, t.id), 0, 0, origRow, origCol);
+
                 contenuti_dettagli td = cld.FirstOrDefault(p => p.id == t.id);
 
                 //byte[] compressed = null;
@@ -134,14 +137,18 @@ namespace idx
 
                 i++;
             } // end foreach
+            Console.WriteLine();
 
+            Console.Write("Saving data source feed... ");
             using (Stream fs = File.Open(sourceFile, FileMode.Create))
             {
-                using (GZipOutputStream outStream = new GZipOutputStream(fs))
+                using (GZipStream outStream = new GZipStream(fs, CompressionMode.Compress))
                 {
                     serializer.SerializeToStream(theFeed, outStream);
                 }
             }
+            Console.WriteLine(" done.");
+            Console.WriteLine();
 
             //ctx.SaveChanges();
             return true;
@@ -189,90 +196,29 @@ namespace idx
         }
     }
 
-    public delegate StaticDataFeed StaticDataFeedGetByIdDelegate(int id);
-
-    /// <summary>
-    /// implementazione SPECIFICA del LIOH
-    /// </summary>
-    class StaticeDataFeedLI : IndexableObjectHandler<StaticDataFeed>
+    public static class StaticeDataFeedExtensions
     {
-        private StaticDataFeedGetByIdDelegate getDelegate = null;
-
-        public StaticeDataFeedLI(StaticDataFeedGetByIdDelegate getDelegate)
+        public static IXDescriptor ToIXDescriptor(this StaticDataFeed dataItem)
         {
-            this.getDelegate = getDelegate;
-        }
-
-        public override string DataItemUniqueIdentifierField
-        {
-            get { return "id"; }
-        }
-
-        public override StaticDataFeed BuildDataItem(InterchangeDocument doc)
-        {
-            if (doc == null)
-                return null;
-
-            int id = id = Convert.ToInt32(doc.Get("id"));
-            return getDelegate(id);
-
-            //StaticDataFeed feed = new StaticDataFeed()
-            //{
-            //    id = Convert.ToInt32(doc.Get("id")),
-            //    titolo = doc.Get("titolo"),
-            //    titolo_orig = doc.Get("titolo_orig"),
-            //    anno = Convert.ToInt32(doc.Get("anno")),
-            //    attivo = Convert.ToBoolean(doc.Get("attivo")),
-            //    id_major = Convert.ToInt32(doc.Get("id_major")),
-            //    codice_prodotto = doc.Get("codice_prodotto"),
-            //    codicemw = doc.Get("codicemw"),
-            //    codicemw_st = doc.Get("codicemw_st"),
-            //    data_inserimento = Convert.ToDateTime(doc.Get("data_inserimento")),
-            //    artista = doc.Get("artista"),
-            //    regista = doc.Get("regista"),
-            //    sceneggiatore = doc.Get("sceneggiatore"),
-            //    produttore = doc.Get("produttore"),
-            //    durata = Convert.ToInt64(doc.Get("durata")),
-            //    generi = doc.Get("generi"),
-            //    tags = doc.Get("tags"),
-            //    data_rilascio = Convert.ToDateTime(doc.Get("data_rilascio")),
-            //    dettagli = doc.Get("dettagli"),
-            //    libro = doc.Get("libro"),
-            //    consigliato = doc.Get("consigliato"),
-            //    recensione = doc.Get("recensione")
-            //};
-
-            //return feed;
-        }
-
-        public override InterchangeDocument DocumentParseFromDataItem(StaticDataFeed dataItem)
-        {
-            return new InterchangeDocument("id",
-                new InterchangeDocumentFieldInfo[]
-                {
-                    new InterchangeDocumentFieldInfo("id",                dataItem.id.ToString(),                 null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                    new InterchangeDocumentFieldInfo("titolo",            dataItem.titolo,                        null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("titolo_orig",       dataItem.titolo_orig,                   null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("anno",              dataItem.anno.ToString(),               null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                    new InterchangeDocumentFieldInfo("attivo",            dataItem.attivo.ToString(),             null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                    new InterchangeDocumentFieldInfo("data_inserimento",  dataItem.data_inserimento.ToString(),   null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                    new InterchangeDocumentFieldInfo("artista",           dataItem.artista.ToString(),            null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("regista",           dataItem.regista.ToString(),            null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("sceneggiatore",     dataItem.sceneggiatore.ToString(),      null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("produttore",        dataItem.produttore.ToString(),         null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("generi",            dataItem.generi.ToString(),             null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("tags",              dataItem.tags.ToString(),               null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("data_rilascio",     dataItem.data_rilascio.ToString(),      null, FieldStore.YES, FieldIndex.NOT_ANALYZED),
-                    new InterchangeDocumentFieldInfo("dettagli",          dataItem.dettagli.ToString(),           null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("libro",             dataItem.libro.ToString(),              null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("consigliato",       dataItem.consigliato.ToString(),        null, FieldStore.YES, FieldIndex.ANALYZED),
-                    new InterchangeDocumentFieldInfo("recensione",        dataItem.recensione.ToString(),         null, FieldStore.YES, FieldIndex.ANALYZED),
-               });
-        }
-
-        public override object DataItemUniqueIdentifierValue(StaticDataFeed dataItem)
-        {
-            return dataItem.id;
+            return new IXDescriptor(
+                    new IXDescriptorProperty("id",                dataItem.id.ToString(),                 null, FieldFlags.UNIQUEID, FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new IXDescriptorProperty("titolo",            dataItem.titolo,                        null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("titolo_orig",       dataItem.titolo_orig,                   null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("anno",              dataItem.anno.ToString(),               null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new IXDescriptorProperty("attivo",            dataItem.attivo.ToString(),             null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new IXDescriptorProperty("data_inserimento",  dataItem.data_inserimento.ToString(),   null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new IXDescriptorProperty("artista",           dataItem.artista.ToString(),            null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("regista",           dataItem.regista.ToString(),            null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("sceneggiatore",     dataItem.sceneggiatore.ToString(),      null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("produttore",        dataItem.produttore.ToString(),         null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("generi",            dataItem.generi.ToString(),             null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("tags",              dataItem.tags.ToString(),               null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("data_rilascio",     dataItem.data_rilascio.ToString(),      null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.NOT_ANALYZED),
+                    new IXDescriptorProperty("dettagli",          dataItem.dettagli.ToString(),           null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("libro",             dataItem.libro.ToString(),              null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("consigliato",       dataItem.consigliato.ToString(),        null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED),
+                    new IXDescriptorProperty("recensione",        dataItem.recensione.ToString(),         null, FieldFlags.NONE,     FieldStore.YES, FieldIndex.ANALYZED)
+               );
         }
     }
 }

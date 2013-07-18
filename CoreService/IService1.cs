@@ -6,7 +6,7 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 
-using corelib.Interchange;
+using InfoStream.Metadata;
 
 namespace CoreService
 {
@@ -15,6 +15,6 @@ namespace CoreService
     public interface IService1
     {
         [OperationContract]
-        InterchangeDocumentsCollection SearchData(string query, int skip, int take, bool useScoring, IEnumerable<string> filteredFields);
+        IXQueryCollection SearchData(IXRequest request);
     }
 }

@@ -4,8 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Runtime.Caching;
 
-using corelib;
-using corelib.Interchange;
+using InfoStream.Core;
+using InfoStream.Metadata;
 
 namespace CoreService
 {
@@ -14,11 +14,11 @@ namespace CoreService
         internal static int cacheDuration = 3600;
         internal static string searchCachePrefix = "coresvclnc";
 
-        internal static IndexerInterop<InterchangeDocument> GetDataCache()
+        internal static ISIndexer GetDataCache()
         {
             ObjectCache cache = MemoryCache.Default;
 
-            IndexerInterop<InterchangeDocument> data = null;
+            ISIndexer data = null;
 
             // mettiamo in cache le informazioni di base
             if (!cache.Contains(searchCachePrefix, null))
@@ -29,17 +29,16 @@ namespace CoreService
                     AbsoluteExpiration = DateTime.UtcNow.AddMinutes(cacheDuration) // usa UtcNow per evitare problemi con le TZ
                 };
 
-               data = new IndexerInterop<InterchangeDocument>(
+               data = new ISIndexer(
                         System.Configuration.ConfigurationManager.AppSettings["indexFolder"],
                         IndexerStorageMode.FSRAM,
-                        IndexerAnalyzer.StandardAnalyzer,
-                        new InterchangeDocumentIOH());
+                        IndexerAnalyzer.StandardAnalyzer);
 
                 cache.Set(searchCachePrefix, data, cacheItemPolicy);
             }
             else
             {
-                data = (cache[searchCachePrefix] as IndexerInterop<InterchangeDocument>);
+                data = (cache[searchCachePrefix] as ISIndexer);
             }
 
             return data;

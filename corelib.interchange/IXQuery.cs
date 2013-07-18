@@ -5,6 +5,8 @@ using System.Text;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("corelib")]
+
 namespace InfoStream.Metadata
 {
     public enum IXQueryStatus : int
@@ -28,11 +30,11 @@ namespace InfoStream.Metadata
         public int Count { get; set; }
         public int Start { get; set; }
         public int Take { get; set; }
-        public IXQueryStatus ResultStatus { get; set; }
-        public IEnumerable<IXQuery> Elements { get; set; }
+        public IXQueryStatus Status { get; set; }
+        public IEnumerable<IXQuery> Results { get; set; }
     }
 
-    public sealed class IXQueryResult
+    internal sealed class IXQueryResult
     {
         public string Name { get; set; }
         public string Value { get; set; }
@@ -56,21 +58,24 @@ namespace InfoStream.Metadata
             set { uniqueIdentifierField = value; }
         }
 
-        private List<IXQueryResult> results = new List<IXQueryResult>();
-        public List<IXQueryResult> Results
+        [DataMember(Name = "Records")]
+        internal List<IXQueryResult> records = new List<IXQueryResult>();
+        public List<Value> Records
         {
-            get { return results; }
-            set { results = value; }
+            get
+            {
+                return records.ConvertAll<Value>(p => new Value() { String = ((p.IsEncoded) ? null : p.Value), Binary = ((p.IsEncoded) ? Convert.FromBase64String(p.Value) : null) });
+            }
         }
 
         public Value this[string index]
         {
             get
             {
-                if (results == null || results.Count < 1)
+                if (records == null || records.Count < 1)
                     return null;
 
-                IXQueryResult val = results.FirstOrDefault(p => p.Name == index);
+                IXQueryResult val = records.FirstOrDefault(p => p.Name == index);
                 
                 if (val == null)
                     return null;
@@ -85,13 +90,13 @@ namespace InfoStream.Metadata
             }
         }
 
-        public IXQuery(string uniqueIdentifierField)
+        internal IXQuery(string uniqueIdentifierField)
         {
             if (String.IsNullOrEmpty(uniqueIdentifierField))
                 throw new ArgumentNullException("uniqueIdentifierField");
         }
 
-        public IXQuery(string uniqueIdentifierField, IEnumerable<IXQueryResult> results)
+        internal IXQuery(string uniqueIdentifierField, IEnumerable<IXQueryResult> results)
         {
             if (results == null)
                 throw new ArgumentNullException("results");
@@ -99,7 +104,7 @@ namespace InfoStream.Metadata
             if (String.IsNullOrEmpty(uniqueIdentifierField) || !results.Any(p => p.Name == uniqueIdentifierField))
                 throw new ArgumentNullException("uniqueIdentifierField");
 
-            this.results.AddRange(results);
+            this.records.AddRange(results);
         }
 
         public Value Get(string key)
@@ -109,13 +114,13 @@ namespace InfoStream.Metadata
 
         public string GetString(string key)
         {
-            IXQueryResult f = results.FirstOrDefault(p => p.Name == key);
+            IXQueryResult f = records.FirstOrDefault(p => p.Name == key);
             return (f == null) ? null : f.Value;
         }
 
         public byte[] GetBinary(string key)
         {
-            IXQueryResult f = results.FirstOrDefault(p => p.Name == key);
+            IXQueryResult f = records.FirstOrDefault(p => p.Name == key);
             return (f == null) ? null : (f.IsEncoded) ? Convert.FromBase64String(f.Value) : null;
         }
     }

@@ -3,7 +3,7 @@ using System;
 using System.Data.Entity;
 using System.Data.Entity.Migrations;
 
-namespace idx
+namespace ISClient
 {
     public partial class DataFeedContext : DbContext
     {

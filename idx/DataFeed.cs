@@ -10,7 +10,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace idx
+namespace ISClient
 {
     //[DataContract(Name = "StaticDataFeed")]
     public class StaticDataFeed

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 using Blackbird.Core.ConsoleIO;
 
-using corelib;
-using System.Diagnostics;
+using InfoStream.Core;
+using InfoStream.Metadata;
 
-namespace idx
+namespace ISClient
 {
     class Program
     {
@@ -38,18 +39,13 @@ namespace idx
             bool reset = ca.Options.IsOptionEnabled("reset");
             bool index = ca.Options.IsOptionEnabled("index");
             bool forceindex = index && ca.Options["index"]=="force";
+            bool updateindex = index && ca.Options["index"]=="update";
             bool usescoring = ca.Options.IsOptionEnabled("withscore");
 
             if(reset)
             {    
                 fd.BuildStaticDataFeed();
             }
-
-            long m0 = GC.GetTotalMemory(false);
-            List<StaticDataFeed> data = fd.ReadStaticDataFeed();
-            long m1 = GC.GetTotalMemory(false);
-            long ms1 = (m1 - m0) > 0 ? (m1 - m0) / (long)1024 : 0; 
-            Console.WriteLine("Data feed: {0} items [mem: {1} kB]", data.Count, ms1 );
 
             IndexerStorageMode mode = IndexerStorageMode.FS;
             if (ca.Options.IsOptionEnabled("mode"))
@@ -60,52 +56,65 @@ namespace idx
                     mode = IndexerStorageMode.FSRAM;
             }
 
-            Console.WriteLine("Index mode: {0}", mode);
-            IndexerInterop<StaticDataFeed> li = new IndexerInterop<StaticDataFeed>(
-                mode,
-                IndexerAnalyzer.StandardAnalyzer,
-                new StaticeDataFeedLI(delegate(int id) { return data.FirstOrDefault(p => p.id == id); }));
+            bool doReindex = reset || (mode==IndexerStorageMode.RAM) || (mode!=IndexerStorageMode.RAM && forceindex) || updateindex;
 
-            long m2 = GC.GetTotalMemory(false);
-            long ms2 = (m2 - m1) > 0 ? (m2 - m1) / (long)1024 : 0;
-            long msA = (m2 - m0) > 0 ? (m2 - m0) / (long)1024 : 0; 
-            Console.WriteLine("Index data: {0} items [mem: {1} kB - total so far: {2} kB]", li.IndexSize, ms2, msA);
-            if (reset || (mode==IndexerStorageMode.RAM) || (mode!=IndexerStorageMode.RAM && forceindex))
+            Console.Write("Loading indexer in {0} mode... ", mode);           
+            long m0 = GC.GetTotalMemory(false);
+            ISIndexer li = new ISIndexer(mode, IndexerAnalyzer.StandardAnalyzer);
+            Console.WriteLine(" done.");
+
+            if (doReindex)
             {
-                Console.Write("Indexing item with identifier:");
+                Console.Write("Data reindexing had been requested: ");
                 int origRow = Console.CursorTop;
                 int origCol = Console.CursorLeft;
+                
+                ConsoleUtils.WriteAt("loading data feed",0,0,origRow,origCol);
+                List<StaticDataFeed> data = fd.ReadStaticDataFeed();
 
+                if (reset || forceindex)
+                    li.ClearAllIndex();
+
+                int i = 1;
                 foreach (StaticDataFeed f in data)
                 {
-                    ConsoleUtils.WriteAt(f.id.ToString() + "... ", 0, 0, origRow, origCol);
-                    bool res = li.AddUpdateLuceneIndex(f);
-                    ConsoleUtils.WriteAt((res==true ? "ok" : "fail") + "          ", 0, 0, Console.CursorTop, Console.CursorLeft);
+                    ConsoleUtils.WriteAt(String.Format("indexing item {0}     ", i), 0, 0, origRow, origCol);
+                    li.AddUpdateLuceneIndex(f.ToIXDescriptor());
+                    i++;
                 }
+
+                li.UpdateMemoryIndexFromFS();
+                data.Clear();
+                data = null;
+                GC.Collect();
+                ConsoleUtils.WriteAt(" completed.           ", 0, 0, origRow, origCol);
                 Console.WriteLine();
             }
+
+            long m1 = GC.GetTotalMemory(false);
+            Console.WriteLine("Index is using {0} kB of RAM", (m1 - m0) > 0 ? (m1 - m0) / (long)1024 : 0);
 
             if (mode == IndexerStorageMode.FSRAM && ca.Options.IsOptionEnabled("simfsramrefresh"))
                 Console.WriteLine("Simulate index refresh: {0}", li.UpdateMemoryIndexFromFS());
 
             if (ca.Arguments.Count > 0 && ca.Arguments[0] == "search")
             {
-                if (usescoring)
-                    li.UseScoring = true;
-
+                Console.WriteLine("[press a key to execute search]");
                 Console.ReadLine();
-                string what = ca.Arguments[1];
-                IEnumerable<string> where = (ca.Arguments.Count > 2) ? ca.Arguments[2].Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries) : new string[]{};
+
+                IXRequest req = new IXRequest(ca.Arguments[1], 0, -1, (usescoring) ? IXRequestFlags.None : IXRequestFlags.UseScore);
 
                 DateTime t1 = DateTime.Now;
-                li.Search(what, where).ScoreDocs.ToList();
-                List<IndexerSearchResultData<StaticDataFeed>> found = li.Search(what, where).ScoreDocs.ToList(); // li.GetAllIndexRecords().ToList();
+                IXQueryCollection reply = li.Search(req);
                 DateTime t2 = DateTime.Now;
 
-                foreach (IndexerSearchResultData<StaticDataFeed> f in found)
-                    Console.WriteLine("Result matching{2}: {0} \"{1}\"", f.Element.id, f.Element.titolo, (li.UseScoring) ? String.Format(" at {0:n2}%", f.Score) : String.Empty);
+                if (reply.Status == IXQueryStatus.Success)
+                {
+                    foreach (IXQuery r in reply.Results)
+                        Console.WriteLine("Result matching{2}: {0} \"{1}\"", r["id"].String, r["titolo"].String, (usescoring) ? String.Format(" at {0:n2}%", r.Score) : String.Empty);
+                }
 
-                Console.WriteLine("search on {0} items required {1}ms and produced {2} results", li.IndexSize, Convert.ToInt32((t2 - t1).TotalMilliseconds), found.Count);
+                Console.WriteLine("Search stats: scope:{0} items status:{2} time:{1}ms results:{3} items", li.IndexSize, Convert.ToInt32((t2 - t1).TotalMilliseconds), reply.Status, reply.Count);
             }
         }
     }

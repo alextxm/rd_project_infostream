@@ -22,11 +22,6 @@ namespace InfoStream.Core
     /// </summary>
     internal static class IndexerExtensions
     {
-        internal static readonly string DocumentUniqueIdentifierFieldName
-        {
-            get { return "$FB::ISIDX$UniqueIdentifier$"; }
-        }
-
         public static Field.Store ToFieldStore(this FieldStore store)
         {
             return (store == FieldStore.YES) ? Field.Store.YES : Field.Store.NO;
@@ -73,42 +68,52 @@ namespace InfoStream.Core
                 return (fieldable.OmitNorms) ? FieldIndex.NOT_ANALYZED_NO_NORMS : FieldIndex.NOT_ANALYZED;
         }
 
-        public static IXQuery ToIXQuery(this Document doc, string uniqueIdentifierField, IEnumerable<string> selectedFields)
+        public static IXQuery ToIXQuery(this Document doc, string uniqueIdentifierField, IEnumerable<string> selectedFields, float? score=null)
         {
             IQueryable<IFieldable> fields = doc.GetFields().Where(p => p.Name != uniqueIdentifierField).AsQueryable();
             IXQuery iDoc = new IXQuery(uniqueIdentifierField);
 
+            if (score != null)
+                iDoc.Score = (float)score;
+
             if (selectedFields != null && selectedFields.Count() > 0)
                 fields = fields.Where(p => selectedFields.Contains(p.Name));
 
-            fields.ToList().ForEach(f => iDoc.Results.Add(new IXQueryResult()
-            {
-                Name = f.Name,
-                Value = (!f.IsBinary) ? f.StringValue : Convert.ToBase64String(f.GetBinaryValue()),
-                IsEncoded = f.IsBinary
-            }));
+            fields.ToList().ForEach(f => iDoc.records.Add(new IXQueryResult()
+                                                                {
+                                                                    Name = f.Name,
+                                                                    Value = (!f.IsBinary) ? f.StringValue : Convert.ToBase64String(f.GetBinaryValue()),
+                                                                    IsEncoded = f.IsBinary
+                                                                }));
 
             return iDoc;
         }
 
-        public static string UniqueIdentifierValue(this IXDescriptor descriptor)
-        {
-            IXDescriptorProperty unique = descriptor.Properties.FirstOrDefault(p => p.Name == descriptor.UniqueIdentifierField);
-            return (unique.IsBinary) ? Convert.ToBase64String(unique.BinaryValue) : unique.StringValue;
-        }
-
-        public static Document ToDocument(this IXDescriptor descriptor, string uniqueValue=null)
+        public static Document ToDocument(this IXDescriptor descriptor, string uniqueIdentifierField)
         {
             Document doc = new Document();
 
-            doc.Add(new Field(  DocumentUniqueIdentifierFieldName,
-                                (uniqueValue==null) ? descriptor.UniqueIdentifierValue() : uniqueValue, 
-                                Field.Store.YES, 
-                                Field.Index.NOT_ANALYZED
-                    ));
-            
-            foreach (IXDescriptorProperty f in descriptor.Properties.Where(p => p.Name != descriptor.UniqueIdentifierField))
-                doc.Add(f.ToField());
+            bool uq = false;
+            foreach (IXDescriptorProperty p in descriptor.Properties)
+            {
+                if ((p.Flags & FieldFlags.UNIQUEID) == FieldFlags.UNIQUEID)
+                {
+                    if (uq)
+                        throw new InvalidOperationException("UNIQUEID not found");
+                    else
+                    {
+                        doc.Add(new Field(uniqueIdentifierField,
+                                            p.Name,
+                                            Field.Store.YES,
+                                            Field.Index.NOT_ANALYZED
+                                ));
+
+                        uq = true;
+                    }
+                }
+
+                doc.Add(p.ToField());
+            }
 
             return doc;
         }

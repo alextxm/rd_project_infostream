@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 using Blackbird.Core.ConsoleIO;
 
-using corelib.Interchange;
-using System.Diagnostics;
+using InfoStream.Metadata;
 
 namespace idxws
 {
@@ -94,12 +94,14 @@ namespace idxws
 
                 Console.ReadLine();
                 string what = ca.Arguments[1];
-               
+
+                IXRequest req = new IXRequest() { Query = ca.Arguments[1], Fields = new string[] { "id", "titolo" }, Skip = 0, Take = 1000, Flags = IXRequestFlags.UseScore };
+
                 DateTime t1 = DateTime.Now;
-                InterchangeDocumentsCollection found = cli.SearchData(what, 0, 1000, (usescoring), new List<string>() { "id", "titolo" });
+                IXQueryCollection found = cli.SearchData(req);
                 DateTime t2 = DateTime.Now;
 
-                foreach (InterchangeDocumentInfo f in found.InterchangeDocuments)
+                foreach (IXQueryResult f in found.Results)
                     Console.WriteLine("Result matching{2}: {0} \"{1}\"", f.Element.Get("id"), f.Element.Get("titolo"), (usescoring) ? String.Format(" at {0:n2}%", f.Score) : String.Empty);
 
                 Console.WriteLine("search required {0}ms and produced {1} results", Convert.ToInt32((t2 - t1).TotalMilliseconds), found.Count);
