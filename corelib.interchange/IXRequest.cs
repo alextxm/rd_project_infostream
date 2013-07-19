@@ -16,7 +16,10 @@ namespace InfoStream.Metadata
         UseScore = 0x01
     }
 
-    [ServiceKnownType(typeof(IXRequestFlags))] 
+    /// <summary>
+    /// definizione di una richiesta (ricerca) all'indexer
+    /// </summary>
+    [ServiceKnownType(typeof(IXRequestFlags))]
     public sealed class IXRequest
     {
         public string Query { get; set; }

@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters.cs" />
+    <Compile Include="IXEntity.cs" />
     <Compile Include="IXRequest.cs" />
     <Compile Include="IXDescriptor.cs" />
     <Compile Include="IXQuery.cs" />

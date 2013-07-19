@@ -16,6 +16,8 @@ namespace InfoStream.Metadata
         [EnumMember]
         NoData = 1,
         [EnumMember]
+        NoSetup = 8,
+        [EnumMember]
         Fail = 9,
         [EnumMember]
         ErrorQuerySyntax = 10,
@@ -23,6 +25,9 @@ namespace InfoStream.Metadata
         ErrorInternal = 11
     }
 
+    /// <summary>
+    /// risposta ad una richiesta fatta all'indexer via IXRequest
+    /// </summary>
     [ServiceKnownType(typeof(IXQueryStatus))]
     [ServiceKnownType(typeof(IXQuery))] 
     public sealed class IXQueryCollection

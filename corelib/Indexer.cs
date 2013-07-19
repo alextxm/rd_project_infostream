@@ -21,12 +21,18 @@ using InfoStream.Metadata;
 
 namespace InfoStream.Core
 {
+    public enum IndexerSetupResult
+    {
+    }
+
     /// <summary>
     /// implementazione del sistema di indicizzazione e ricerca
     /// </summary>
     public class ISIndexer : IDisposable
     {
         private string indexerDocumentUniqueIdentifierFieldName = "$FB::ISIDX$UniqueIdentifier$";
+        private string indexerDocumentDescriptorVersion = "$FB::ISIDX$DescriptorVersion$";
+
         protected delegate void IndexSearcherUpdateHandler(object sender, EventArgs e);
 
         protected IndexerStorageMode indexMode = IndexerStorageMode.FS;
@@ -107,6 +113,11 @@ namespace InfoStream.Core
 
         protected event IndexSearcherUpdateHandler OnIndexSearcherUpdateRequested = null;
         protected IXQueryCollection EmptySearchResult = new IXQueryCollection() { Count = 0, Start = 0, Take = 0, Results = new IXQuery[]{}, Status = IXQueryStatus.Fail };
+
+        private IXDescriptor descriptor = null;
+        public string descriptorVersion = null;
+        private bool setup = false;
+        private System.Security.Cryptography.HashAlgorithm hashFactory = null;
 
         #region public properties
         public int MaxSearchHits { get; set; }
@@ -206,6 +217,24 @@ namespace InfoStream.Core
             this.MaxSearchHits = 1000; // DEFAULT
         }
         #endregion
+
+        public IndexerSetupResult Setup(IXDescriptor descriptor)
+        {
+            if (setup)
+                return false;
+
+            hashFactory = new System.Security.Cryptography.SHA256Managed();
+
+            string _v = Convert.ToBase64String(hashFactory.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(descriptor.ToString())));
+
+            int df = indexSearcher.DocFreq(new Term(indexerDocumentDescriptorVersion, _v));
+            
+                // set up searcher
+            TermDocs term = indexSearcher.IndexReader.TermDocs();
+
+            while (term.Next())
+                docs.Add(indexSearcher.Doc(term.Doc));
+        }
 
         #region public methods
         /// <summary>

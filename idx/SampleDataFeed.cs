@@ -182,7 +182,7 @@ namespace ISClient
                                 ms.Write(writeData, 0, size);
                             else
                                 break;
-                        }                       
+                        }
                     }
                 }
 
