@@ -23,6 +23,8 @@ namespace InfoStream.Core
 {
     public enum IndexerSetupResult
     {
+        Okay,
+        Failure
     }
 
     /// <summary>
@@ -221,7 +223,7 @@ namespace InfoStream.Core
         public IndexerSetupResult Setup(IXDescriptor descriptor)
         {
             if (setup)
-                return false;
+                return IndexerSetupResult.Failure;
 
             hashFactory = new System.Security.Cryptography.SHA256Managed();
 
@@ -229,11 +231,14 @@ namespace InfoStream.Core
 
             int df = indexSearcher.DocFreq(new Term(indexerDocumentDescriptorVersion, _v));
             
-                // set up searcher
+            // set up searcher
             TermDocs term = indexSearcher.IndexReader.TermDocs();
 
+            List<Document> docs = new List<Document>();
             while (term.Next())
                 docs.Add(indexSearcher.Doc(term.Doc));
+
+            return IndexerSetupResult.Okay;
         }
 
         #region public methods
