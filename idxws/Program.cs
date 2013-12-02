@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
+using Blackbird.Core.Web.Services;
 using Blackbird.Core.ConsoleIO;
 
 using InfoStream.Metadata;
@@ -90,7 +91,26 @@ namespace idxws
 
             if (ca.Arguments.Count > 0 && ca.Arguments[0] == "search")
             {
-                CoreService.Service1Client cli = new CoreService.Service1Client();
+                //WCFConnectionManager<InfoStream.Metadata.IInfoStreamService> zk = new WCFConnectionManager<IInfoStreamService>()
+                //WCFServiceReferenceInfo zz = new WCFServiceReferenceInfo(
+                //WCFSimpleConnectionManager<InfoStream.Metadata.IInfoStreamService> px = new WCFSimpleConnectionManager<IInfoStreamService>()
+                //    new WCFServiceReferenceInfo(
+                //        new WCFBindingInfo(
+                //    {
+                //                          BindingType = WCFBindingType.BasicHttp,
+                //                          CloseTimeout = new TimeSpan(0, 1, 0),
+                //                          OpenTimeout = new TimeSpan(0, 1, 0),
+                //                          SendTimeout = new TimeSpan(0, 1, 0),
+                //                          ReceiveTimeout = new TimeSpan(0, 1, 0),
+                //                          SecurityMode = WCFServiceSecurityMode.None,
+                //                          TransferMode = System.ServiceModel.TransferMode.Buffered,
+                //                          Protocol = WCFProtocolType.HTTP
+                //                      },
+                //        new Endpoint
+                //        ServiceReferenceName = "is"
+                //    });
+
+                CoreService.InfoStreamServiceClient cli = new CoreService.InfoStreamServiceClient();
 
                 Console.ReadLine();
                 string what = ca.Arguments[1];
@@ -101,8 +121,8 @@ namespace idxws
                 IXQueryCollection found = cli.SearchData(req);
                 DateTime t2 = DateTime.Now;
 
-                foreach (IXQueryResult f in found.Results)
-                    Console.WriteLine("Result matching{2}: {0} \"{1}\"", f.Element.Get("id"), f.Element.Get("titolo"), (usescoring) ? String.Format(" at {0:n2}%", f.Score) : String.Empty);
+                foreach (IXQuery q in found.Results)
+                    Console.WriteLine("Result matching{2}: {0} \"{1}\"", q.Records.First(f => f.Name == "id").String, q.Records.First(f => f.Name == "titolo").String, (usescoring) ? String.Format(" at {0:n2}%", q.Score) : String.Empty);
 
                 Console.WriteLine("search required {0}ms and produced {1} results", Convert.ToInt32((t2 - t1).TotalMilliseconds), found.Count);
             }

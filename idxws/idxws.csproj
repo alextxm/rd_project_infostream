@@ -70,17 +70,18 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Properties\DataSources\corelib.Interchange.InterchangeDocumentsCollection.datasource" />
-    <None Include="Service References\CoreService\Service1.wsdl" />
-    <None Include="Service References\CoreService\Service1.xsd">
+    <None Include="Properties\DataSources\InfoStream.Metadata.IXQueryCollection.datasource" />
+    <None Include="Service References\CoreService\InfoStreamService.wsdl" />
+    <None Include="Service References\CoreService\InfoStreamService.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\CoreService\Service11.xsd">
+    <None Include="Service References\CoreService\InfoStreamService1.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\CoreService\Service12.xsd">
+    <None Include="Service References\CoreService\InfoStreamService2.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\CoreService\Service13.xsd">
+    <None Include="Service References\CoreService\InfoStreamService3.xsd">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
@@ -88,7 +89,7 @@
     <WCFMetadataStorage Include="Service References\CoreService\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\CoreService\Service1.disco" />
+    <None Include="Service References\CoreService\InfoStreamService.disco" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Service References\CoreService\configuration91.svcinfo" />

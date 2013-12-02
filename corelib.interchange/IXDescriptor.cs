@@ -8,6 +8,7 @@ using System.Text;
 namespace InfoStream.Metadata
 {
     [Flags]
+    [DataContract]
     public enum FieldFlags
     {
         [EnumMember]
@@ -16,6 +17,7 @@ namespace InfoStream.Metadata
         UNIQUEID
     }
 
+    [DataContract]
     public enum FieldStore
     {
         [EnumMember]
@@ -24,6 +26,7 @@ namespace InfoStream.Metadata
         NO
     }
 
+    [DataContract]
     public enum FieldIndex
     {
         [EnumMember]
@@ -41,15 +44,20 @@ namespace InfoStream.Metadata
     /// <summary>
     /// classe di informazioni su di un documento indicizzato dall'indexer
     /// </summary>
+    [DataContract]
     [Serializable]
     public sealed class IXDescriptor
     {
+        [DataContract]
         public sealed class PropertyInfo
         {
+            [DataMember]
             public string Name { get; set; }
+            [DataMember]
             public string Value { get; set; }
         }
 
+        [DataMember(Name = "Properties")]
         private List<IXDescriptorProperty> properties = new List<IXDescriptorProperty>();
         public List<IXDescriptorProperty> Properties
         {
@@ -93,19 +101,25 @@ namespace InfoStream.Metadata
         }
     }
 
-    [Serializable]
     [ServiceKnownType(typeof(FieldFlags))]
     [ServiceKnownType(typeof(FieldStore))]
     [ServiceKnownType(typeof(FieldIndex))]
+    [DataContract]
+    [Serializable]
     public sealed class IXDescriptorProperty
     {
+        [DataMember]
         public string Name { get; set; }
+        [DataMember]
         public string StringValue { get; set; }
+        [DataMember]
         public byte[] BinaryValue { get; set; }
+        [DataMember]
         public bool IsBinary
         {
             get { return (BinaryValue == null) ? false : true; }
         }
+        [DataMember]
         public string SafeValue
         {
             get
@@ -114,8 +128,11 @@ namespace InfoStream.Metadata
             }
         }
 
+        [DataMember]
         public FieldFlags Flags { get; set; }
+        [DataMember]
         public FieldStore Store { get; set; }
+        [DataMember]
         public FieldIndex Index { get; set; }
 
         public IXDescriptorProperty()
