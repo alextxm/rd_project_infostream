@@ -8,6 +8,9 @@ using System.Text;
 namespace InfoStream.Metadata
 {
     [Flags]
+    [Serializable]
+    [DataContract]
+    [DataContract]
     public enum FieldFlags
     {
         [EnumMember]
@@ -16,6 +19,8 @@ namespace InfoStream.Metadata
         UNIQUEID
     }
 
+    [Serializable]
+    [DataContract]
     public enum FieldStore
     {
         [EnumMember]
@@ -24,6 +29,8 @@ namespace InfoStream.Metadata
         NO
     }
 
+    [Serializable]
+    [DataContract]
     public enum FieldIndex
     {
         [EnumMember]
@@ -41,16 +48,23 @@ namespace InfoStream.Metadata
     /// <summary>
     /// classe di informazioni su di un documento indicizzato dall'indexer
     /// </summary>
+    [DataContract]
     [Serializable]
+    [DataContract]
     public sealed class IXDescriptor
     {
+        [DataContract]
         public sealed class PropertyInfo
         {
+            [DataMember]
             public string Name { get; set; }
+            [DataMember]
             public string Value { get; set; }
         }
 
+        [DataMember(Name = "Properties")]
         private List<IXDescriptorProperty> properties = new List<IXDescriptorProperty>();
+        [DataMember]
         public List<IXDescriptorProperty> Properties
         {
             get { return properties; }
@@ -61,6 +75,7 @@ namespace InfoStream.Metadata
             }
         }
 
+        [DataMember]
         public PropertyInfo UniqueIdentifier
         {
             get
@@ -94,18 +109,27 @@ namespace InfoStream.Metadata
     }
 
     [Serializable]
+    [Serializable]
+    [DataContract]
     [ServiceKnownType(typeof(FieldFlags))]
     [ServiceKnownType(typeof(FieldStore))]
     [ServiceKnownType(typeof(FieldIndex))]
+    [DataContract]
+    [Serializable]
     public sealed class IXDescriptorProperty
     {
+        [DataMember]
         public string Name { get; set; }
+        [DataMember]
         public string StringValue { get; set; }
+        [DataMember]
         public byte[] BinaryValue { get; set; }
+        [DataMember]
         public bool IsBinary
         {
             get { return (BinaryValue == null) ? false : true; }
         }
+        [DataMember]
         public string SafeValue
         {
             get
@@ -114,8 +138,11 @@ namespace InfoStream.Metadata
             }
         }
 
+        [DataMember]
         public FieldFlags Flags { get; set; }
+        [DataMember]
         public FieldStore Store { get; set; }
+        [DataMember]
         public FieldIndex Index { get; set; }
 
         public IXDescriptorProperty()

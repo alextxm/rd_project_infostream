@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters.cs" />
+    <Compile Include="IInfoStreamService.cs" />
     <Compile Include="IXEntity.cs" />
     <Compile Include="IXRequest.cs" />
     <Compile Include="IXDescriptor.cs" />

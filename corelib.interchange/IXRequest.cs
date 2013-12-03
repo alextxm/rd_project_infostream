@@ -8,6 +8,7 @@ using System.ServiceModel;
 namespace InfoStream.Metadata
 {
     [Flags]
+    [DataContract]
     public enum IXRequestFlags
     {
         [EnumMember]
@@ -20,13 +21,24 @@ namespace InfoStream.Metadata
     /// definizione di una richiesta (ricerca) all'indexer
     /// </summary>
     [ServiceKnownType(typeof(IXRequestFlags))]
+    [DataContract]
+    [Serializable]
     public sealed class IXRequest
     {
+        [DataMember]
         public string Query { get; set; }
+        [DataMember]
         public int Skip { get; set; }
+        [DataMember]
         public int Take { get; set; }
+        [DataMember]
         public IXRequestFlags Flags { get; set; }
+        [DataMember]
         public IEnumerable<string> Fields { get; set; }
+
+        public IXRequest()
+        {
+        }
 
         public IXRequest(string query, int skip, int take, IEnumerable<string> fields=null)
         {

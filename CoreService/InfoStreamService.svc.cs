@@ -14,10 +14,10 @@ namespace CoreService
     // NOTA: è possibile utilizzare il comando "Rinomina" del menu "Refactoring" per modificare il nome di classe "Service1" nel codice, nel file svc e nel file di configurazione contemporaneamente.
     // NOTA: per avviare il client di prova WCF per testare il servizio, selezionare Service1.svc o Service1.svc.cs in Esplora soluzioni e avviare il debug.
     //[ServiceBehavior(InstanceContextMode.Single)]
-    public class Service1 : IService1
+    public class InfoStreamService : IInfoStreamService
     {
         private ISIndexer indexer = null;
-        public Service1()
+        public InfoStreamService()
         {
             indexer = CacheManager.GetDataCache();
         }

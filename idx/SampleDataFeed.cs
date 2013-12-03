@@ -14,6 +14,7 @@ using Blackbird.Core;
 using Blackbird.Core.Serialization;
 using Blackbird.Core.Zib;
 
+using Ionic.Zlib;
 
 namespace ISClient
 {

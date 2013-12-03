@@ -5,10 +5,10 @@ using System.Text;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("corelib")]
 
 namespace InfoStream.Metadata
 {
+    [DataContract]
     public enum IXQueryStatus : int
     {
         [EnumMember]
@@ -30,33 +30,61 @@ namespace InfoStream.Metadata
     /// </summary>
     [ServiceKnownType(typeof(IXQueryStatus))]
     [ServiceKnownType(typeof(IXQuery))] 
+    [DataContract]
+    [Serializable]
     public sealed class IXQueryCollection
     {
+        [DataMember]
         public int Count { get; set; }
+        [DataMember]
         public int Start { get; set; }
+        [DataMember]
         public int Take { get; set; }
+        [DataMember]
         public IXQueryStatus Status { get; set; }
+        [DataMember]
         public IEnumerable<IXQuery> Results { get; set; }
     }
 
+    [DataContract]
+    [Serializable]
     internal sealed class IXQueryResult
     {
+        [DataMember]
         public string Name { get; set; }
+        [DataMember]
         public string Value { get; set; }
+        [DataMember]
         public bool IsEncoded { get; set; }
     }
 
+    [DataContract]
+    [Serializable]
     public sealed class IXQuery
     {
+        [DataContract]
+        [Serializable]
         public sealed class Value
         {
+            [DataMember]
+            public string Name { get; set; }
+            [DataMember]
             public string String { get; set; }
+            [DataMember]
             public byte[] Binary { get; set; }
         }
 
+        [DataMember]
         public float Score { get; set; }
 
         private string uniqueIdentifierField = null;
+        public string UniqueIdentifierField
+        {
+            get { return uniqueIdentifierField; }
+            set { uniqueIdentifierField = value; }
+        }
+        private string uniqueIdentifierField = null;
+        [DataMember]
         public string UniqueIdentifierField
         {
             get { return uniqueIdentifierField; }
@@ -69,10 +97,11 @@ namespace InfoStream.Metadata
         {
             get
             {
-                return records.ConvertAll<Value>(p => new Value() { String = ((p.IsEncoded) ? null : p.Value), Binary = ((p.IsEncoded) ? Convert.FromBase64String(p.Value) : null) });
+                return (records==null || records.Count<1) ? new List<Value>() : records.ConvertAll<Value>(p => new Value() { Name = p.Name, String = ((p.IsEncoded) ? null : p.Value), Binary = ((p.IsEncoded) ? Convert.FromBase64String(p.Value) : null) });
             }
         }
 
+        [DataMember]
         public Value this[string index]
         {
             get
