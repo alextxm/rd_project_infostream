@@ -78,12 +78,6 @@ namespace InfoStream.Metadata
         public float Score { get; set; }
 
         private string uniqueIdentifierField = null;
-        public string UniqueIdentifierField
-        {
-            get { return uniqueIdentifierField; }
-            set { uniqueIdentifierField = value; }
-        }
-        private string uniqueIdentifierField = null;
         [DataMember]
         public string UniqueIdentifierField
         {
@@ -101,7 +95,7 @@ namespace InfoStream.Metadata
             }
         }
 
-        [DataMember]
+        [IgnoreDataMember]
         public Value this[string index]
         {
             get

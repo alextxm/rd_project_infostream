@@ -4,12 +4,28 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISClient", "idx\ISClient.csproj", "{00327A43-7A22-4AF1-B4F1-005073440A45}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISCore", "corelib\ISCore.csproj", "{24CDFE16-EA5C-428E-B6BC-3C8FCF73AA3B}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreService", "CoreService\CoreService.csproj", "{510A91B0-E3E1-4E3F-9D4E-3A1B6220722F}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8B3B0D7B-436A-4A5B-AE56-5F0E7457D486}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
@@ -17,13 +33,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8B3B0D
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISMetadataLib", "corelib.interchange\ISMetadataLib.csproj", "{4EA1BC0D-A4BC-4646-A571-9C00F4FAD9CE}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "idxws", "idxws\idxws.csproj", "{497D2CF9-FD26-4B6D-919C-5BC5F7F2546B}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 	ProjectSection(ProjectDependencies) = postProject
 		{510A91B0-E3E1-4E3F-9D4E-3A1B6220722F} = {510A91B0-E3E1-4E3F-9D4E-3A1B6220722F}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blackbird.Core", "..\blackbird\Blackbird.Core\Blackbird.Core.csproj", "{4278CD77-6B5E-4F69-A2D9-AB659D38CE3A}"
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
+EndProject
 Global
+	GlobalSection(PlasticSccProperties) = preSolution
+		ControlledByPlastic = True
+		SccProvider = Plastic SCM
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -49,36 +83,12 @@ Global
 		{497D2CF9-FD26-4B6D-919C-5BC5F7F2546B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{497D2CF9-FD26-4B6D-919C-5BC5F7F2546B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{497D2CF9-FD26-4B6D-919C-5BC5F7F2546B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4278CD77-6B5E-4F69-A2D9-AB659D38CE3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4278CD77-6B5E-4F69-A2D9-AB659D38CE3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4278CD77-6B5E-4F69-A2D9-AB659D38CE3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4278CD77-6B5E-4F69-A2D9-AB659D38CE3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(PlasticSccProperties) = preSolution
-		ControlledByPlastic = True
-		SccProvider = Plastic SCM
-	EndGlobalSection
-	GlobalSection(PlasticSccProperties) = preSolution
-		ControlledByPlastic = True
-		SccProvider = Plastic SCM
-	EndGlobalSection
-	GlobalSection(PlasticSccProperties) = preSolution
-		ControlledByPlastic = True
-		SccProvider = Plastic SCM
-	EndGlobalSection
-	GlobalSection(PlasticSccProperties) = preSolution
-		ControlledByPlastic = True
-		SccProvider = Plastic SCM
-	EndGlobalSection
-	GlobalSection(PlasticSccProperties) = preSolution
-		ControlledByPlastic = True
-		SccProvider = Plastic SCM
-	EndGlobalSection
-	GlobalSection(PlasticSccProperties) = preSolution
-		ControlledByPlastic = True
-		SccProvider = Plastic SCM
-	EndGlobalSection
-	GlobalSection(PlasticSccProperties) = preSolution
-		ControlledByPlastic = True
-		SccProvider = Plastic SCM
 	EndGlobalSection
 EndGlobal

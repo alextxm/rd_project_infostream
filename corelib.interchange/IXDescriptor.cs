@@ -10,7 +10,6 @@ namespace InfoStream.Metadata
     [Flags]
     [Serializable]
     [DataContract]
-    [DataContract]
     public enum FieldFlags
     {
         [EnumMember]
@@ -50,7 +49,6 @@ namespace InfoStream.Metadata
     /// </summary>
     [DataContract]
     [Serializable]
-    [DataContract]
     public sealed class IXDescriptor
     {
         [DataContract]
@@ -109,13 +107,10 @@ namespace InfoStream.Metadata
     }
 
     [Serializable]
-    [Serializable]
     [DataContract]
     [ServiceKnownType(typeof(FieldFlags))]
     [ServiceKnownType(typeof(FieldStore))]
     [ServiceKnownType(typeof(FieldIndex))]
-    [DataContract]
-    [Serializable]
     public sealed class IXDescriptorProperty
     {
         [DataMember]

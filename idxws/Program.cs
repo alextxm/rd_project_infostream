@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-using Blackbird.Core.Web.Services;
+using Blackbird.Core.WCF;
 using Blackbird.Core.ConsoleIO;
 
 using InfoStream.Metadata;
@@ -110,21 +110,44 @@ namespace idxws
                 //        ServiceReferenceName = "is"
                 //    });
 
-                CoreService.InfoStreamServiceClient cli = new CoreService.InfoStreamServiceClient();
+                IXQueryCollection found = null;
 
+                //CoreService.InfoStreamServiceClient cli = new CoreService.InfoStreamServiceClient();
+                WCFConnectionManager<IInfoStreamService> cm =
+                    new WCFConnectionManager<IInfoStreamService>(
+                        new WCFServiceReferenceInfo()
+                            {
+                                EndpointAddress = "http://localhost:51043/InfoStreamService.svc",
+                                ServiceReferenceName = "IInfoStreamService",
+                                Info = new WCFBindingInfo()
+                                  {
+                                      BindingType = WCFBindingType.BasicHttp,
+                                      TransferMode = WCFTransferMode.Buffered,
+                                      TransferLimit = 1048576,
+                                      ItemsLimit = 1048576
+                                  }
+                            });
+
+                cm.Open();
+                IInfoStreamService cli = cm.CreateProxyClient().WsInterface;
+
+                Console.WriteLine("Press a key to execute the query");
                 Console.ReadLine();
                 string what = ca.Arguments[1];
 
                 IXRequest req = new IXRequest() { Query = ca.Arguments[1], Fields = new string[] { "id", "titolo" }, Skip = 0, Take = 1000, Flags = IXRequestFlags.UseScore };
 
                 DateTime t1 = DateTime.Now;
-                IXQueryCollection found = cli.SearchData(req);
+                found = cli.SearchData(req);
                 DateTime t2 = DateTime.Now;
 
                 foreach (IXQuery q in found.Results)
                     Console.WriteLine("Result matching{2}: {0} \"{1}\"", q.Records.First(f => f.Name == "id").String, q.Records.First(f => f.Name == "titolo").String, (usescoring) ? String.Format(" at {0:n2}%", q.Score) : String.Empty);
 
                 Console.WriteLine("search required {0}ms and produced {1} results", Convert.ToInt32((t2 - t1).TotalMilliseconds), found.Count);
+
+                cm.Close();
+                cm.Dispose();
             }
         }
     }
