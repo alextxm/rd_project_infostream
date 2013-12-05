@@ -36,6 +36,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Blackbird.Core">
+      <HintPath>..\Blackbird.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
@@ -49,60 +52,17 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service References\CoreService\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\blackbird\Blackbird.Core\Blackbird.Core.csproj">
-      <Project>{4278cd77-6b5e-4f69-a2d9-ab659d38ce3a}</Project>
-      <Name>Blackbird.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\corelib.interchange\ISMetadataLib.csproj">
       <Project>{4ea1bc0d-a4bc-4646-a571-9c00f4fad9ce}</Project>
       <Name>ISMetadataLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="Properties\DataSources\corelib.Interchange.InterchangeDocumentsCollection.datasource" />
     <None Include="Properties\DataSources\InfoStream.Metadata.IXQueryCollection.datasource" />
-    <None Include="Service References\CoreService\InfoStreamService.wsdl" />
-    <None Include="Service References\CoreService\InfoStreamService.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\CoreService\InfoStreamService1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\CoreService\InfoStreamService2.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\CoreService\InfoStreamService3.xsd">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\CoreService\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\CoreService\InfoStreamService.disco" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\CoreService\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\CoreService\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\CoreService\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

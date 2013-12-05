@@ -13,6 +13,19 @@ namespace idxws
 {
     class Program
     {
+        static WCFServiceReferenceInfo wsConfiguration = new WCFServiceReferenceInfo()
+                                                                    {
+                                                                        EndpointAddress = "http://localhost:51043/InfoStreamService.svc",
+                                                                        ServiceReferenceName = "IInfoStreamService",
+                                                                        Info = new WCFBindingInfo()
+                                                                          {
+                                                                              BindingType = WCFBindingType.BasicHttp,
+                                                                              TransferMode = WCFTransferMode.Buffered,
+                                                                              TransferLimit = 1048576,
+                                                                              ItemsLimit = 1048576
+                                                                          }
+                                                                    };
+
         static void Usage()
         {
             Console.WriteLine("Usage: idxws [options] [search string [fields]]");
@@ -113,23 +126,7 @@ namespace idxws
                 IXQueryCollection found = null;
 
                 //CoreService.InfoStreamServiceClient cli = new CoreService.InfoStreamServiceClient();
-                WCFConnectionManager<IInfoStreamService> cm =
-                    new WCFConnectionManager<IInfoStreamService>(
-                        new WCFServiceReferenceInfo()
-                            {
-                                EndpointAddress = "http://localhost:51043/InfoStreamService.svc",
-                                ServiceReferenceName = "IInfoStreamService",
-                                Info = new WCFBindingInfo()
-                                  {
-                                      BindingType = WCFBindingType.BasicHttp,
-                                      TransferMode = WCFTransferMode.Buffered,
-                                      TransferLimit = 1048576,
-                                      ItemsLimit = 1048576
-                                  }
-                            });
-
-                cm.Open();
-                IInfoStreamService cli = cm.CreateProxyClient().WsInterface;
+                WCFConnectionManager<IInfoStreamService> cm = new WCFConnectionManager<IInfoStreamService>(wsConfiguration);
 
                 Console.WriteLine("Press a key to execute the query");
                 Console.ReadLine();
@@ -137,16 +134,21 @@ namespace idxws
 
                 IXRequest req = new IXRequest() { Query = ca.Arguments[1], Fields = new string[] { "id", "titolo" }, Skip = 0, Take = 1000, Flags = IXRequestFlags.UseScore };
 
-                DateTime t1 = DateTime.Now;
-                found = cli.SearchData(req);
-                DateTime t2 = DateTime.Now;
+                DateTime t1 = DateTime.MinValue;
+                DateTime t2 = DateTime.MinValue;
+
+                using (WCFGenericProxy<IInfoStreamService> cli = cm.CreateProxyClient())
+                {
+                    t1 = DateTime.Now;
+                    found = cli.WsInterface.SearchData(req); //cli.SearchData(req); 
+                    t2 = DateTime.Now;
+                }
 
                 foreach (IXQuery q in found.Results)
                     Console.WriteLine("Result matching{2}: {0} \"{1}\"", q.Records.First(f => f.Name == "id").String, q.Records.First(f => f.Name == "titolo").String, (usescoring) ? String.Format(" at {0:n2}%", q.Score) : String.Empty);
 
                 Console.WriteLine("search required {0}ms and produced {1} results", Convert.ToInt32((t2 - t1).TotalMilliseconds), found.Count);
 
-                cm.Close();
                 cm.Dispose();
             }
         }
