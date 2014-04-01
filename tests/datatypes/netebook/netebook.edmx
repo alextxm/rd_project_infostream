@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="2.0" xmlns:edmx="http://schemas.microsoft.com/ado/2008/10/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="netbookModel.Store" Alias="Self" Provider="MySql.Data.MySqlClient" ProviderManifestToken="5.5" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+        <EntityContainer Name="netbookModelStoreContainer">
+          <EntitySet Name="contenuti" EntityType="netbookModel.Store.contenuti" store:Type="Tables" Schema="netbook" />
+          <EntitySet Name="contenuti_dettagli" EntityType="netbookModel.Store.contenuti_dettagli" store:Type="Tables" Schema="netbook" />
+        </EntityContainer>
+        <EntityType Name="contenuti">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="uint" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="titolo" Type="varchar" MaxLength="250" />
+          <Property Name="prezzo" Type="double" Nullable="false" />
+          <Property Name="id_genere" Type="uint" />
+          <Property Name="anno" Type="uint" />
+          <Property Name="attivo" Type="tinyint" />
+          <Property Name="tipo" Type="enum" />
+          <Property Name="id_major" Type="uint" Nullable="false" />
+          <Property Name="codice_prodotto" Type="varchar" MaxLength="45" />
+          <Property Name="codice_traccia" Type="varchar" MaxLength="45" />
+          <Property Name="has_preview" Type="utinyint" Nullable="false" />
+          <Property Name="has_img" Type="utinyint" Nullable="false" />
+          <Property Name="has_drm" Type="utinyint" Nullable="false" />
+          <Property Name="codicemw" Type="varchar" Nullable="false" MaxLength="45" />
+          <Property Name="vendibile" Type="utinyint" Nullable="false" />
+          <Property Name="num_traccia" Type="uint" Nullable="false" />
+          <Property Name="num_volume" Type="uint" Nullable="false" />
+          <Property Name="data_inserimento" Type="timestamp" Nullable="false" />
+          <Property Name="codice_prezzo_major" Type="varchar" Nullable="false" MaxLength="45" />
+          <Property Name="artista" Type="varchar" Nullable="false" MaxLength="128" />
+          <Property Name="rifalbum" Type="uint" Nullable="false" />
+          <Property Name="brani" Type="uint" Nullable="false" />
+          <Property Name="versione" Type="varchar" Nullable="false" MaxLength="90" />
+          <Property Name="durata" Type="uint" Nullable="false" />
+          <Property Name="generi" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="voto" Type="decimal" Scale="2" />
+          <Property Name="num_voti" Type="int" />
+          <Property Name="isbn" Type="varchar" MaxLength="50" />
+          <Property Name="pagine" Type="varchar" MaxLength="15" />
+          <Property Name="editato_manualmente" Type="int" />
+          <Property Name="data_inizio_vendibilita" Type="datetime" />
+          <Property Name="data_fine_vendibilita" Type="datetime" />
+          <Property Name="titolo_search" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="artista_search" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="editore" Type="varchar" MaxLength="255" />
+          <Property Name="linktowebtv" Type="varchar" MaxLength="255" />
+          <Property Name="preview_url" Type="varchar" MaxLength="255" />
+          <Property Name="filesize" Type="varchar" MaxLength="20" />
+          <Property Name="id_editore_per_previewurl" Type="varchar" MaxLength="20" />
+        </EntityType>
+        <EntityType Name="contenuti_dettagli">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="uint" Nullable="false" />
+          <Property Name="upc" Type="varchar" Nullable="false" MaxLength="30" />
+          <Property Name="isrc" Type="varchar" Nullable="false" MaxLength="30" />
+          <Property Name="titolo" Type="varchar" Nullable="false" MaxLength="128" />
+          <Property Name="versione" Type="varchar" Nullable="false" MaxLength="90" />
+          <Property Name="tipologia" Type="varchar" Nullable="false" MaxLength="20" />
+          <Property Name="album" Type="varchar" Nullable="false" MaxLength="128" />
+          <Property Name="interprete" Type="varchar" Nullable="false" MaxLength="128" />
+          <Property Name="compositore" Type="varchar" Nullable="false" MaxLength="128" />
+          <Property Name="genere" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="data_rilascio" Type="date" Nullable="false" />
+          <Property Name="brani" Type="uint" Nullable="false" />
+          <Property Name="durata" Type="uint" Nullable="false" />
+          <Property Name="dimensione" Type="uint" Nullable="false" />
+          <Property Name="distributore" Type="varchar" Nullable="false" MaxLength="50" />
+          <Property Name="etichetta" Type="varchar" Nullable="false" MaxLength="50" />
+          <Property Name="copyright" Type="varchar" Nullable="false" MaxLength="250" />
+          <Property Name="formato" Type="varchar" Nullable="false" MaxLength="20" />
+          <Property Name="bitrate" Type="varchar" Nullable="false" MaxLength="20" />
+          <Property Name="numero" Type="uint" Nullable="false" />
+          <Property Name="dettagli" Type="text" Nullable="false" />
+          <Property Name="credits" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="durata_string" Type="varchar" Nullable="false" MaxLength="20" />
+        </EntityType>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="netbookModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+        <EntityContainer Name="netbookEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="contenuti" EntityType="netbookModel.contenuti" />
+          <EntitySet Name="contenuti_dettagli" EntityType="netbookModel.contenuti_dettagli" />
+        </EntityContainer>
+        <EntityType Name="contenuti">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="titolo" Type="String" MaxLength="250" Unicode="false" FixedLength="false" />
+          <Property Name="prezzo" Type="Double" Nullable="false" />
+          <Property Name="id_genere" Type="Int64" />
+          <Property Name="anno" Type="Int64" />
+          <Property Name="attivo" Type="SByte" />
+          <Property Name="tipo" Type="String" MaxLength="65532" Unicode="false" FixedLength="false" />
+          <Property Name="id_major" Type="Int64" Nullable="false" />
+          <Property Name="codice_prodotto" Type="String" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="codice_traccia" Type="String" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="has_preview" Type="Byte" Nullable="false" />
+          <Property Name="has_img" Type="Byte" Nullable="false" />
+          <Property Name="has_drm" Type="Byte" Nullable="false" />
+          <Property Name="codicemw" Type="String" Nullable="false" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="vendibile" Type="Byte" Nullable="false" />
+          <Property Name="num_traccia" Type="Int64" Nullable="false" />
+          <Property Name="num_volume" Type="Int64" Nullable="false" />
+          <Property Name="data_inserimento" Type="DateTime" Nullable="false" />
+          <Property Name="codice_prezzo_major" Type="String" Nullable="false" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="artista" Type="String" Nullable="false" MaxLength="128" Unicode="false" FixedLength="false" />
+          <Property Name="rifalbum" Type="Int64" Nullable="false" />
+          <Property Name="brani" Type="Int64" Nullable="false" />
+          <Property Name="versione" Type="String" Nullable="false" MaxLength="90" Unicode="false" FixedLength="false" />
+          <Property Name="durata" Type="Int64" Nullable="false" />
+          <Property Name="generi" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="voto" Type="Decimal" />
+          <Property Name="num_voti" Type="Int32" />
+          <Property Name="isbn" Type="String" MaxLength="50" Unicode="false" FixedLength="false" />
+          <Property Name="pagine" Type="String" MaxLength="15" Unicode="false" FixedLength="false" />
+          <Property Name="editato_manualmente" Type="Int32" />
+          <Property Name="data_inizio_vendibilita" Type="DateTime" />
+          <Property Name="data_fine_vendibilita" Type="DateTime" />
+          <Property Name="titolo_search" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="artista_search" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="editore" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="linktowebtv" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="preview_url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="filesize" Type="String" MaxLength="20" Unicode="false" FixedLength="false" />
+          <Property Name="id_editore_per_previewurl" Type="String" MaxLength="20" Unicode="false" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="contenuti_dettagli">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" />
+          <Property Name="upc" Type="String" Nullable="false" MaxLength="30" Unicode="false" FixedLength="false" />
+          <Property Name="isrc" Type="String" Nullable="false" MaxLength="30" Unicode="false" FixedLength="false" />
+          <Property Name="titolo" Type="String" Nullable="false" MaxLength="128" Unicode="false" FixedLength="false" />
+          <Property Name="versione" Type="String" Nullable="false" MaxLength="90" Unicode="false" FixedLength="false" />
+          <Property Name="tipologia" Type="String" Nullable="false" MaxLength="20" Unicode="false" FixedLength="false" />
+          <Property Name="album" Type="String" Nullable="false" MaxLength="128" Unicode="false" FixedLength="false" />
+          <Property Name="interprete" Type="String" Nullable="false" MaxLength="128" Unicode="false" FixedLength="false" />
+          <Property Name="compositore" Type="String" Nullable="false" MaxLength="128" Unicode="false" FixedLength="false" />
+          <Property Name="genere" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="data_rilascio" Type="DateTime" Nullable="false" />
+          <Property Name="brani" Type="Int64" Nullable="false" />
+          <Property Name="durata" Type="Int64" Nullable="false" />
+          <Property Name="dimensione" Type="Int64" Nullable="false" />
+          <Property Name="distributore" Type="String" Nullable="false" MaxLength="50" Unicode="false" FixedLength="false" />
+          <Property Name="etichetta" Type="String" Nullable="false" MaxLength="50" Unicode="false" FixedLength="false" />
+          <Property Name="copyright" Type="String" Nullable="false" MaxLength="250" Unicode="false" FixedLength="false" />
+          <Property Name="formato" Type="String" Nullable="false" MaxLength="20" Unicode="false" FixedLength="false" />
+          <Property Name="bitrate" Type="String" Nullable="false" MaxLength="20" Unicode="false" FixedLength="false" />
+          <Property Name="numero" Type="Int64" Nullable="false" />
+          <Property Name="dettagli" Type="String" Nullable="false" MaxLength="65535" Unicode="false" FixedLength="false" />
+          <Property Name="credits" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="durata_string" Type="String" Nullable="false" MaxLength="20" Unicode="false" FixedLength="false" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="netbookModelStoreContainer" CdmEntityContainer="netbookEntities">
+          <EntitySetMapping Name="contenuti">
+            <EntityTypeMapping TypeName="netbookModel.contenuti">
+              <MappingFragment StoreEntitySet="contenuti">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="titolo" ColumnName="titolo" />
+                <ScalarProperty Name="prezzo" ColumnName="prezzo" />
+                <ScalarProperty Name="id_genere" ColumnName="id_genere" />
+                <ScalarProperty Name="anno" ColumnName="anno" />
+                <ScalarProperty Name="attivo" ColumnName="attivo" />
+                <ScalarProperty Name="tipo" ColumnName="tipo" />
+                <ScalarProperty Name="id_major" ColumnName="id_major" />
+                <ScalarProperty Name="codice_prodotto" ColumnName="codice_prodotto" />
+                <ScalarProperty Name="codice_traccia" ColumnName="codice_traccia" />
+                <ScalarProperty Name="has_preview" ColumnName="has_preview" />
+                <ScalarProperty Name="has_img" ColumnName="has_img" />
+                <ScalarProperty Name="has_drm" ColumnName="has_drm" />
+                <ScalarProperty Name="codicemw" ColumnName="codicemw" />
+                <ScalarProperty Name="vendibile" ColumnName="vendibile" />
+                <ScalarProperty Name="num_traccia" ColumnName="num_traccia" />
+                <ScalarProperty Name="num_volume" ColumnName="num_volume" />
+                <ScalarProperty Name="data_inserimento" ColumnName="data_inserimento" />
+                <ScalarProperty Name="codice_prezzo_major" ColumnName="codice_prezzo_major" />
+                <ScalarProperty Name="artista" ColumnName="artista" />
+                <ScalarProperty Name="rifalbum" ColumnName="rifalbum" />
+                <ScalarProperty Name="brani" ColumnName="brani" />
+                <ScalarProperty Name="versione" ColumnName="versione" />
+                <ScalarProperty Name="durata" ColumnName="durata" />
+                <ScalarProperty Name="generi" ColumnName="generi" />
+                <ScalarProperty Name="voto" ColumnName="voto" />
+                <ScalarProperty Name="num_voti" ColumnName="num_voti" />
+                <ScalarProperty Name="isbn" ColumnName="isbn" />
+                <ScalarProperty Name="pagine" ColumnName="pagine" />
+                <ScalarProperty Name="editato_manualmente" ColumnName="editato_manualmente" />
+                <ScalarProperty Name="data_inizio_vendibilita" ColumnName="data_inizio_vendibilita" />
+                <ScalarProperty Name="data_fine_vendibilita" ColumnName="data_fine_vendibilita" />
+                <ScalarProperty Name="titolo_search" ColumnName="titolo_search" />
+                <ScalarProperty Name="artista_search" ColumnName="artista_search" />
+                <ScalarProperty Name="editore" ColumnName="editore" />
+                <ScalarProperty Name="linktowebtv" ColumnName="linktowebtv" />
+                <ScalarProperty Name="preview_url" ColumnName="preview_url" />
+                <ScalarProperty Name="filesize" ColumnName="filesize" />
+                <ScalarProperty Name="id_editore_per_previewurl" ColumnName="id_editore_per_previewurl" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="contenuti_dettagli">
+            <EntityTypeMapping TypeName="netbookModel.contenuti_dettagli">
+              <MappingFragment StoreEntitySet="contenuti_dettagli">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="upc" ColumnName="upc" />
+                <ScalarProperty Name="isrc" ColumnName="isrc" />
+                <ScalarProperty Name="titolo" ColumnName="titolo" />
+                <ScalarProperty Name="versione" ColumnName="versione" />
+                <ScalarProperty Name="tipologia" ColumnName="tipologia" />
+                <ScalarProperty Name="album" ColumnName="album" />
+                <ScalarProperty Name="interprete" ColumnName="interprete" />
+                <ScalarProperty Name="compositore" ColumnName="compositore" />
+                <ScalarProperty Name="genere" ColumnName="genere" />
+                <ScalarProperty Name="data_rilascio" ColumnName="data_rilascio" />
+                <ScalarProperty Name="brani" ColumnName="brani" />
+                <ScalarProperty Name="durata" ColumnName="durata" />
+                <ScalarProperty Name="dimensione" ColumnName="dimensione" />
+                <ScalarProperty Name="distributore" ColumnName="distributore" />
+                <ScalarProperty Name="etichetta" ColumnName="etichetta" />
+                <ScalarProperty Name="copyright" ColumnName="copyright" />
+                <ScalarProperty Name="formato" ColumnName="formato" />
+                <ScalarProperty Name="bitrate" ColumnName="bitrate" />
+                <ScalarProperty Name="numero" ColumnName="numero" />
+                <ScalarProperty Name="dettagli" ColumnName="dettagli" />
+                <ScalarProperty Name="credits" ColumnName="credits" />
+                <ScalarProperty Name="durata_string" ColumnName="durata_string" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2008/10/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="False" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Nessuno" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

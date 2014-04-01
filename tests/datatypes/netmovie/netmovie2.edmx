@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="2.0" xmlns:edmx="http://schemas.microsoft.com/ado/2008/10/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="netmovie2Model.Store" Alias="Self" Provider="MySql.Data.MySqlClient" ProviderManifestToken="5.5" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+        <EntityContainer Name="netmovie2ModelStoreContainer">
+          <EntitySet Name="contenuti" EntityType="netmovie2Model.Store.contenuti" store:Type="Tables" Schema="netmovie2" />
+          <EntitySet Name="contenuti_dettagli" EntityType="netmovie2Model.Store.contenuti_dettagli" store:Type="Tables" Schema="netmovie2" />
+        </EntityContainer>
+        <EntityType Name="contenuti">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="uint" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="titolo" Type="varchar" MaxLength="255" />
+          <Property Name="titolo_orig" Type="varchar" MaxLength="255" />
+          <Property Name="prezzo" Type="double" Nullable="false" />
+          <Property Name="prezzo_st" Type="double" Nullable="false" />
+          <Property Name="id_genere" Type="uint" />
+          <Property Name="anno" Type="uint" />
+          <Property Name="attivo" Type="tinyint" />
+          <Property Name="id_major" Type="uint" Nullable="false" />
+          <Property Name="codice_prodotto" Type="varchar" MaxLength="45" />
+          <Property Name="codicemw" Type="varchar" Nullable="false" MaxLength="45" />
+          <Property Name="codicemw_st" Type="varchar" Nullable="false" MaxLength="45" />
+          <Property Name="data_inserimento" Type="datetime" Nullable="false" />
+          <Property Name="codice_prezzo_major" Type="varchar" Nullable="false" MaxLength="45" />
+          <Property Name="codice_prezzo_major_st" Type="varchar" Nullable="false" MaxLength="45" />
+          <Property Name="artista" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="regista" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="sceneggiatore" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="produttore" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="durata" Type="uint" Nullable="false" />
+          <Property Name="generi" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="voto" Type="decimal" Scale="2" />
+          <Property Name="num_voti" Type="int" />
+          <Property Name="titolo_search" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="artista_search" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="regista_search" Type="varchar" Nullable="false" MaxLength="1024" />
+          <Property Name="preview_url" Type="varchar" MaxLength="255" />
+          <Property Name="inricerca" Type="int" Nullable="false" />
+          <Property Name="bundle" Type="int" Nullable="false" />
+          <Property Name="tags" Type="varchar" MaxLength="1024" />
+          <Property Name="cmgroupid" Type="int" Nullable="false" />
+          <Property Name="targetdevice" Type="varchar" Nullable="false" MaxLength="32" />
+        </EntityType>
+        <EntityType Name="contenuti_dettagli">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="uint" Nullable="false" />
+          <Property Name="data_rilascio" Type="date" Nullable="false" />
+          <Property Name="dettagli" Type="text" Nullable="false" />
+          <Property Name="libro" Type="varchar" Nullable="false" MaxLength="128" />
+          <Property Name="consigliato" Type="varchar" Nullable="false" MaxLength="45" />
+          <Property Name="recensione" Type="text" />
+        </EntityType>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="netmovie2Model" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+        <EntityContainer Name="netmovie2Entities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="contenuti" EntityType="netmovie2Model.contenuti" />
+          <EntitySet Name="contenuti_dettagli" EntityType="netmovie2Model.contenuti_dettagli" />
+        </EntityContainer>
+        <EntityType Name="contenuti">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="titolo" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="titolo_orig" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="prezzo" Type="Double" Nullable="false" />
+          <Property Name="prezzo_st" Type="Double" Nullable="false" />
+          <Property Name="id_genere" Type="Int64" />
+          <Property Name="anno" Type="Int64" />
+          <Property Name="attivo" Type="SByte" />
+          <Property Name="id_major" Type="Int64" Nullable="false" />
+          <Property Name="codice_prodotto" Type="String" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="codicemw" Type="String" Nullable="false" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="codicemw_st" Type="String" Nullable="false" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="data_inserimento" Type="DateTime" Nullable="false" />
+          <Property Name="codice_prezzo_major" Type="String" Nullable="false" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="codice_prezzo_major_st" Type="String" Nullable="false" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="artista" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="regista" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="sceneggiatore" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="produttore" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="durata" Type="Int64" Nullable="false" />
+          <Property Name="generi" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="voto" Type="Decimal" />
+          <Property Name="num_voti" Type="Int32" />
+          <Property Name="titolo_search" Type="String" Nullable="false" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="artista_search" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="regista_search" Type="String" Nullable="false" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="preview_url" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
+          <Property Name="inricerca" Type="Int32" Nullable="false" />
+          <Property Name="bundle" Type="Int32" Nullable="false" />
+          <Property Name="tags" Type="String" MaxLength="1024" Unicode="false" FixedLength="false" />
+          <Property Name="cmgroupid" Type="Int32" Nullable="false" />
+          <Property Name="targetdevice" Type="String" Nullable="false" MaxLength="32" Unicode="false" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="contenuti_dettagli">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" />
+          <Property Name="data_rilascio" Type="DateTime" Nullable="false" />
+          <Property Name="dettagli" Type="String" Nullable="false" MaxLength="65535" Unicode="false" FixedLength="false" />
+          <Property Name="libro" Type="String" Nullable="false" MaxLength="128" Unicode="false" FixedLength="false" />
+          <Property Name="consigliato" Type="String" Nullable="false" MaxLength="45" Unicode="false" FixedLength="false" />
+          <Property Name="recensione" Type="String" MaxLength="65535" Unicode="false" FixedLength="false" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="netmovie2ModelStoreContainer" CdmEntityContainer="netmovie2Entities">
+          <EntitySetMapping Name="contenuti">
+            <EntityTypeMapping TypeName="netmovie2Model.contenuti">
+              <MappingFragment StoreEntitySet="contenuti">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="titolo" ColumnName="titolo" />
+                <ScalarProperty Name="titolo_orig" ColumnName="titolo_orig" />
+                <ScalarProperty Name="prezzo" ColumnName="prezzo" />
+                <ScalarProperty Name="prezzo_st" ColumnName="prezzo_st" />
+                <ScalarProperty Name="id_genere" ColumnName="id_genere" />
+                <ScalarProperty Name="anno" ColumnName="anno" />
+                <ScalarProperty Name="attivo" ColumnName="attivo" />
+                <ScalarProperty Name="id_major" ColumnName="id_major" />
+                <ScalarProperty Name="codice_prodotto" ColumnName="codice_prodotto" />
+                <ScalarProperty Name="codicemw" ColumnName="codicemw" />
+                <ScalarProperty Name="codicemw_st" ColumnName="codicemw_st" />
+                <ScalarProperty Name="data_inserimento" ColumnName="data_inserimento" />
+                <ScalarProperty Name="codice_prezzo_major" ColumnName="codice_prezzo_major" />
+                <ScalarProperty Name="codice_prezzo_major_st" ColumnName="codice_prezzo_major_st" />
+                <ScalarProperty Name="artista" ColumnName="artista" />
+                <ScalarProperty Name="regista" ColumnName="regista" />
+                <ScalarProperty Name="sceneggiatore" ColumnName="sceneggiatore" />
+                <ScalarProperty Name="produttore" ColumnName="produttore" />
+                <ScalarProperty Name="durata" ColumnName="durata" />
+                <ScalarProperty Name="generi" ColumnName="generi" />
+                <ScalarProperty Name="voto" ColumnName="voto" />
+                <ScalarProperty Name="num_voti" ColumnName="num_voti" />
+                <ScalarProperty Name="titolo_search" ColumnName="titolo_search" />
+                <ScalarProperty Name="artista_search" ColumnName="artista_search" />
+                <ScalarProperty Name="regista_search" ColumnName="regista_search" />
+                <ScalarProperty Name="preview_url" ColumnName="preview_url" />
+                <ScalarProperty Name="inricerca" ColumnName="inricerca" />
+                <ScalarProperty Name="bundle" ColumnName="bundle" />
+                <ScalarProperty Name="tags" ColumnName="tags" />
+                <ScalarProperty Name="cmgroupid" ColumnName="cmgroupid" />
+                <ScalarProperty Name="targetdevice" ColumnName="targetdevice" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="contenuti_dettagli">
+            <EntityTypeMapping TypeName="netmovie2Model.contenuti_dettagli">
+              <MappingFragment StoreEntitySet="contenuti_dettagli">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="data_rilascio" ColumnName="data_rilascio" />
+                <ScalarProperty Name="dettagli" ColumnName="dettagli" />
+                <ScalarProperty Name="libro" ColumnName="libro" />
+                <ScalarProperty Name="consigliato" ColumnName="consigliato" />
+                <ScalarProperty Name="recensione" ColumnName="recensione" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2008/10/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="False" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Nessuno" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

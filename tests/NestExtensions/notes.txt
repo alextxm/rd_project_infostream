@@ -1,0 +1,40 @@
+﻿//
+// [11/12/2013 - 18:20]
+// GetMapping() molte volte ritorna una classe blank perche' non supporta il campo analyzer nella classe RootObjectMapping
+// Tale campo e' previsto sia da ES 0.90 che da ES 1.0, come alias per settare lo stesso valore a index_analyzer e search_analyzer
+// Per aggiungere tale supporto, modificare in NEST il file RootObjectMapping.cs per aggiungere alla classe RootObjectMapping le linee:
+//
+// [JsonProperty("analyzer")]
+// public string Analyzer
+// {
+//     set { IndexAnalyzer = value; SearchAnalyzer = value; }
+// }
+//
+// [12/12/2013 - 17:30]
+// Okay, ora il quadro e' COMPLETO:
+// se si usa una classe con un TypeName CUSTOM (ovvero specificando .TypeName(...) bypassando il naming di NEST), le chiamate avranno il seguente esito:
+//   client.GetMapping(indexname, nomecustom) --> OKAY
+//   client.GetMapping<TIPO>(indexname) --> NULL
+// per far si che funzioni occorre come minimo specificare
+//   .MapDefaultTypeNames(p => p.Add(typeof(TIPO), nomecustom))
+// nelle ConnectionOptions, per far si the client.Infer.TypeName<T>() restituisca il valore nomecustom corretto per fare il detect
+//
+// in alernativa, poiche' il MapDefaultTypeNames e' da farsi
+//   - a priori prima dell'apertuna della connessione
+//   - oppure istanziando una nuova connessione
+// e questo non e' ottimale, e' possibile fare l'override del namer di NEST come nell'esempio di sopra tramite TypesStoreManager()
+//
+// [13/12/2013 - 17:30]
+// tutto questo funziona in ES 0.90, mentre ES 1.0 aggiunge nel flusso di risposta un nodo di root con nome pari a quello dell'indice.
+// per ovviare a questo, che causa GetMapping a NULL, occorre modificare in NEST la GetMapping stessa con le seguenti linee:
+//       Newtonsoft.Json.Linq.JToken p = Newtonsoft.Json.Linq.JObject.Parse(status.Result).GetValue(index);
+//       var mappings = this.Deserialize<IDictionary<string, RootObjectMapping>>((p == null) ? status.Result : p.ToString());
+// per il metodo public RootObjectMapping GetMapping(string index, string type) di ElasticClient-MappingGet.cs
+//
+// [14/12/2013]
+// Per poter mantenere al massimo la compatibilita' con NEST e' stato deciso di:
+//  - modificare la classe ElasticClient di NEST per esporre le proprieta' private come protected
+//  - sviluppare un modulo di estensioni (NestExtensions) che raggruppi quanto ricercato nei giorni precedenti senza alterare NEST
+// in particolare, e' stato possibile inserire le modifiche per analyzer in GetMapping() senza alterare la classe RootObjectMapping
+// e' stato inoltre inclusa la modifica per ES 1.0
+//
