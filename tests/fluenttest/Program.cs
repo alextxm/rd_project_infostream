@@ -104,7 +104,7 @@ namespace fluenttest
         static bool MailConverterDelegate(IEmailMessage msg)
         {
             Console.Write("{0}\\{1} ... ", msg.FullPathName, (String.IsNullOrEmpty(msg.Filename)) ? msg.MessageID : msg.Filename);
-            bool ret = client.Index<EmailMessage>(new EmailMessage(msg), p => p.Index(indexname)).Created; // .Type("emailmessage")
+            bool ret = client.Index<EmailMessage>(new EmailMessage(msg), p => p.Index(indexname)).OK; // in beta2 will be Created // .Type("emailmessage")
             Console.WriteLine((ret) ? "done." : "failed.");
             return ret;
         }
